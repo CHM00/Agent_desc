@@ -1,0 +1,3756 @@
+/* ==========================================================================
+   [ START OF FILE style.css ]
+   CircuitManus Pro - Lumina Script / 光绘墨迹 主题
+   版本: 1.1.7_LogLayoutFix_BlackHoleRevise
+   描述: 优化Agent执行轨迹侧栏布局 (图标与主文本同排, 详情在下方),
+         重构3D组件视觉效果为更逼真黑洞模拟 (CSS分层吸积盘 + 环绕恒星模拟)。
+   ========================================================================== */
+
+/* ==========================================================================
+   [ 1. CSS Reset and Base Styles ]
+   全局样式重置和基础HTML/Body元素的默认样式定义。
+   ========================================================================== */
+
+/* 应用于所有元素，包括伪元素，以确保盒模型计算一致 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  /* 将盒模型设置为border-box，padding和border不计入元素宽高 */
+  margin: 0;
+  /* 移除元素的默认外边距 */
+  padding: 0;
+  /* 移除元素的默认内边距 */
+}
+
+/* 定义根元素的样式 */
+html {
+  font-size: var(--base-font-size);
+  /* 根字体大小使用CSS变量，方便全局缩放主题UI元素 */
+  scroll-behavior: smooth;
+  /* 启用平滑滚动效果，用于页面内部锚点跳转等 */
+}
+
+/* 定义Body元素的默认样式，影响整个页面 */
+body {
+  font-family: var(--font-family-body);
+  /* 应用主体文本字体 */
+  line-height: var(--line-height-base);
+  /* 应用基础行高，提高文本可读性 */
+  background-color: var(--current-bg);
+  /* 应用当前背景色，根据主题动态切换 */
+  color: var(--current-text-primary);
+  /* 应用当前主要文本颜色，根据主题动态切换 */
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* 防止在Body元素上生成主滚动条，页面的滚动由内部特定容器控制 */
+  /* 添加背景色和文本颜色的过渡效果，使主题切换平滑 */
+  transition: background-color var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    color var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+  -webkit-font-smoothing: antialiased;
+  /* 优化字体在Webkit浏览器上的渲染平滑度 */
+  -moz-osx-font-smoothing: grayscale;
+  /* 优化字体在macOS Firefox上的渲染平滑度 */
+  letter-spacing: 0.2px;
+  /* 微调字符间距，提升整体文本观感 */
+}
+
+/* ==========================================================================
+   [ 2. Lumina Theme Variables ]
+   定义Lumima Script主题相关的CSS变量，包括颜色、字体、尺寸、过渡时长等。
+   这些变量根据 body[data-theme] 在 [3. Theme Application Logic] 中被应用。
+   ========================================================================== */
+:root {
+  /* Lumina Script - 浅色模式 (月白宣纸 / Moon White Rice Paper) 变量定义 */
+  --lumina-bg-light: #F9F8F6;
+  /* 极浅米色背景，模拟宣纸质感 */
+  --lumina-panel-bg-light: rgba(251, 250, 248, 0.9);
+  /* 半透明面板背景，稍深于主背景，增加层次 */
+  --lumina-panel-border-light: rgba(120, 115, 110, 0.25);
+  /* 面板边框颜色，淡墨色，半透明 */
+  --lumina-text-primary-light: #4A4642;
+  /* 主要文本颜色，深墨色 */
+  --lumina-text-secondary-light: #88827C;
+  /* 辅助文本颜色，较浅的墨色 */
+  --lumina-accent-ink-light: #A0522D;
+  /* 印章红/赭石色，用于重要的强调元素（如主按钮、部分图标） */
+  --lumina-accent-light-light: #5E8BC9;
+  /* 天青蓝，用于光绘线条、能量感元素、主要交互（如链接、悬停效果） */
+  --lumina-glow-light: rgba(94, 139, 201, 0.35);
+  /* 天青蓝辉光颜色，用于光晕效果 */
+  /* 浅色模式下的背景纹理 (SVG Data URI模拟墨点或纸张纤维) */
+  --lumina-ink-texture-light: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseTextureLight'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 .2 0 0 0 0 .19 0 0 0 0 .18 0 0 0 .015 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseTextureLight)' opacity='0.3'/%3E%3C/svg%3E");
+
+  /* Lumina Script - 深色模式 (墨黑星空 / Ink Black Starry Sky) 变量定义 */
+  --lumina-bg-dark: #16181D;
+  /* 深邃墨黑背景，模拟夜空或深沉的墨迹 */
+  --lumina-panel-bg-dark: rgba(22, 24, 29, 0.88);
+  /* 半透明面板背景，稍浅于主背景，增加层次 */
+  --lumina-panel-border-dark: rgba(180, 195, 230, 0.3);
+  /* 面板边框颜色，淡银色，半透明 */
+  --lumina-text-primary-dark: #E0D8CE;
+  /* 主要文本颜色，暖白色，模拟星光或淡墨迹 */
+  --lumina-text-secondary-dark: #A09A90;
+  /* 辅助文本颜色，较浅的暖灰色 */
+  --lumina-accent-ink-dark: #E6C37F;
+  /* 璨金色，用于重要的强调元素（如主按钮、部分图标），模拟金箔或亮色印章 */
+  --lumina-accent-light-dark: #7AB8F5;
+  /* 星河蓝，用于光绘线条、能量感元素、主要交互（如链接、悬停效果），模拟星辰或蓝光 */
+  --lumina-glow-dark: rgba(122, 184, 245, 0.4);
+  /* 星河蓝辉光颜色，用于光晕效果 */
+  /* 深色模式下的背景纹理 (SVG Data URI模拟星尘或墨迹扩散) */
+  --lumina-ink-texture-dark: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseTextureDark'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 .9 0 0 0 0 .85 0 0 0 0 .8 0 0 0 .02 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseTextureDark)' opacity='0.4'/%3E%3C/svg%3E");
+
+  /* 字体定义 */
+  --font-family-title: "Orbitron", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  /* 标题和重要元素的字体，科技感或艺术感 */
+  --font-family-body: "Roboto", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  /* 主体文本字体，易读性高 */
+
+  /* 尺寸与间距基础单位 */
+  --base-font-size: 16px;
+  /* 基础字体大小，所有rem或em基于此计算 */
+  --line-height-base: 1.75;
+  /* 基础行高 */
+  --spacing-unit: 8px;
+  /* 基础间距单位，用于构建整个布局和元素间距 */
+
+  /* 圆角定义 */
+  --border-radius-soft: 12px;
+  /* 较大的柔和圆角，主要用于面板、气泡等大块区域 */
+  --border-radius-slight: 6px;
+  /* 较小的微略圆角，用于按钮、输入框等交互元素和内部组件 */
+
+  /* 过渡与动画时长及缓动函数 */
+  --transition-duration-ink-subtle: 0.45s;
+  /* 墨迹般微妙过渡时长，用于颜色、透明度、简单位置变化 */
+  --transition-duration-ink-flow: 0.65s;
+  /* 墨迹般流动过渡时长，用于更明显或复杂的过渡，如加载动画 */
+  --transition-duration-light-pulse: 0.35s;
+  /* 光晕/脉冲过渡时长，用于按钮、图标等快速交互反馈 */
+  --transition-timing-function-lumina: cubic-bezier(0.35, 0, 0.25, 1);
+  /* Lumina主题专用缓动函数，提供独特动画曲线 */
+
+  /* Z-轴层级定义，管理元素堆叠顺序 */
+  --z-index-loader: 1000;
+  /* 加载遮罩层最高 */
+  --z-index-modal: 900;
+  /* 模态框次高 */
+  --z-index-toast: 950;
+  /* Toast通知略高于模态框，防止被遮挡 */
+  --z-index-sidebar: 100;
+  /* 侧边栏在基础内容之上 */
+  --z-index-header: 150;
+  /* 头部在侧边栏之上 */
+  --z-index-component-wrapper: 50;
+  /* 3D黑洞组件在基础内容之下，但高于背景 */
+  --z-index-process-log: 60;
+  /* 日志侧边栏在3D组件之上，防止遮挡交互 */
+  --z-index-file-preview: 55;
+  /* 文件预览区在3D组件之上，但低于日志侧边栏 */
+
+  /* 组件特定尺寸定义 */
+  --idt-offset-top-percentage: 2.5%;
+  /* 3D组件顶部相对于视口高度的偏移百分比 */
+  --idt-offset-left-percentage: 1.8%;
+  /* 3D组件左侧相对于视口宽度的偏移百分比 */
+  --idt-component-width: 280px;
+  /* 3D组件的固定宽度 */
+  --idt-component-height: 280px;
+  /* 3D组件的固定高度 */
+  --header-height: 70px;
+  /* 头部的高度 */
+  --process-log-sidebar-width: 350px;
+  /* 日志侧边栏展开状态的宽度 */
+  --process-log-sidebar-width-collapsed: 55px;
+  /* 日志侧边栏折叠状态的宽度 */
+  --input-area-height: 75px;
+  /* 输入区域的初始/最小高度 */
+
+  /* 光绘线条粗细定义，用于边框或分隔线 */
+  --lumina-line-weight-thin: 1px;
+  /* 细线 */
+  --lumina-line-weight-medium: 1.5px;
+  /* 中等粗细 */
+  --lumina-line-weight-bold: 2.5px;
+  /* 粗线，用于强调 */
+
+  /* 错误与成功状态颜色 */
+  --lumina-error-color: #D9534F;
+  /* 标准错误红色 */
+  --lumina-error-glow: rgba(217, 83, 79, 0.4);
+  /* 错误状态的辉光颜色 */
+  --lumina-success-color: #5CB85C;
+  /* 标准成功绿色 */
+  --lumina-success-glow: rgba(92, 184, 92, 0.4);
+  /* 成功状态的辉光颜色 */
+}
+
+/* ==========================================================================
+   [ 3. Theme Application Logic ]
+   根据 body[data-theme] 属性和 prefers-color-scheme 媒体查询，将 Lumina
+   变量映射到通用的 --current-* 变量，实现主题切换和自动适应。
+   ========================================================================== */
+
+/* 当body元素的data-theme属性为'light-crystal'（强制浅色）或
+   data-theme为'auto-crystal'且系统偏好亮色时（通过JS添加的类），
+   应用浅色主题变量。 */
+body[data-theme='light-crystal'],
+body[data-theme="auto-crystal"].light-crystal-active {
+  /* 应用浅色主题背景色 */
+  --current-bg: var(--lumina-bg-light);
+  /* 应用浅色主题面板背景色 */
+  --current-panel-bg: var(--lumina-panel-bg-light);
+  /* 应用浅色主题面板边框颜色 */
+  --current-panel-border: var(--lumina-panel-border-light);
+  /* 应用浅色主题主要文本颜色 */
+  --current-text-primary: var(--lumina-text-primary-light);
+  /* 应用浅色主题辅助文本颜色 */
+  --current-text-secondary: var(--lumina-text-secondary-light);
+  /* 应用浅色主题墨迹/印章强调色 */
+  --current-accent-ink: var(--lumina-accent-ink-light);
+  /* 应用浅色主题光/能量强调色 */
+  --current-accent-light: var(--lumina-accent-light-light);
+  /* 应用浅色主题辉光颜色 */
+  --current-glow: rgba(var(--lumina-accent-light-rgb), 0.35); /* 确保使用 RGB 变量 */
+  /* 应用浅色主题背景纹理 */
+  --current-ink-texture: var(--lumina-ink-texture-light);
+
+  /* 用于RGBA计算的RGB值，方便在CSS中动态调整透明度 */
+  --current-accent-light-rgb: 94, 139, 201;
+  --current-accent-ink-rgb: 160, 82, 45;
+  --current-panel-bg-rgb: 251, 250, 248;
+  --current-bg-rgb: 249, 248, 246;
+  --current-text-primary-rgb: 74, 70, 66;
+  --current-text-secondary-rgb: 136, 130, 124;
+  --current-error-color-rgb: 217, 83, 79;
+  --current-success-color-rgb: 92, 184, 92;
+}
+
+/* 当body元素的data-theme属性为'dark-crystal'（强制暗色）或
+   data-theme为'auto-crystal'且系统偏好暗色时（通过JS添加的类），
+   应用暗色主题变量。 */
+body[data-theme='dark-crystal'],
+body[data-theme="auto-crystal"].dark-crystal-active {
+  /* 应用深色主题背景色 */
+  --current-bg: var(--lumina-bg-dark);
+  /* 应用深色主题面板背景色 */
+  --current-panel-bg: rgba(22, 24, 29, 0.88);
+  /* 半透明面板背景，稍浅于主背景，增加层次 */
+  --lumina-panel-border-dark: rgba(180, 195, 230, 0.3);
+  /* 面板边框颜色，淡银色，半透明 */
+  --current-panel-border: var(--lumina-panel-border-dark);
+  /* 应用深色主题主要文本颜色 */
+  --current-text-primary: var(--lumina-text-primary-dark);
+  /* 应用深色主题辅助文本颜色 */
+  --current-text-secondary: var(--lumina-text-secondary-dark);
+  /* 应用深色主题墨迹/印章强调色 */
+  --lumina-accent-ink-dark: #E6C37F;
+  /* 璨金色，用于重要的强调元素（如主按钮、部分图标），模拟金箔或亮色印章 */
+  --current-accent-ink: var(--lumina-accent-ink-dark);
+  /* 应用深色主题光/能量强调色 */
+  --lumina-accent-light-dark: #7AB8F5;
+  /* 星河蓝，用于光绘线条、能量感元素、主要交互（如链接、悬停效果），模拟星辰或蓝光 */
+  --current-accent-light: var(--lumina-accent-light-dark);
+  /* 应用深色主题辉光颜色 */
+  --current-glow: rgba(var(--lumina-accent-light-rgb), 0.4); /* 确保使用 RGB 变量 */
+  /* 应用深色主题背景纹理 */
+  --current-ink-texture: var(--lumina-ink-texture-dark);
+
+  /* 用于RGBA计算的RGB值，方便在CSS中动态调整透明度 */
+  --current-accent-light-rgb: 122, 184, 245;
+  --current-accent-ink-rgb: 230, 195, 127;
+  --current-panel-bg-rgb: 22, 24, 29;
+  --current-bg-rgb: 22, 24, 29;
+  --current-text-primary-rgb: 224, 216, 206;
+  --current-text-secondary-rgb: 160, 154, 144;
+  --current-error-color-rgb: 217, 83, 79;
+  --current-success-color-rgb: 92, 184, 92;
+}
+
+/* 确保错误和成功颜色的 RGB 变量存在于 :root */
+:root {
+    --lumina-error-color-rgb: 217, 83, 79;
+    --lumina-success-color-rgb: 92, 184, 92;
+}
+
+
+/* ==========================================================================
+   [ 4. Typography ]
+   字体、标题、链接、图标等基础排版样式。
+   ========================================================================== */
+
+/* 所有标题 (h1-h6) 的共同样式 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-title);
+  /* 应用标题字体 */
+  color: var(--current-text-primary);
+  /* 应用主要文本颜色 */
+  font-weight: 500;
+  /* 字体粗细 */
+  letter-spacing: 0.8px;
+  /* 增加字符间距 */
+  /* 添加微妙的文字阴影，模拟辉光和深度 */
+  text-shadow: 0 0 10px rgba(var(--current-accent-light-rgb), 0.15),
+    0 0 1px rgba(var(--current-text-primary-rgb), 0.2);
+}
+
+/* 链接的基础样式 */
+a {
+  color: var(--current-accent-light);
+  /* 链接颜色使用光强调色 */
+  text-decoration: none;
+  /* 移除下划线 */
+  /* 添加颜色和滤镜的过渡效果 */
+  transition: color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    filter var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  font-weight: 500;
+  /* 字体加粗 */
+}
+
+/* 链接悬停或聚焦时的样式 */
+a:hover,
+a:focus {
+  /* 悬停颜色混合了强调色和主要文本色 */
+  color: color-mix(in srgb, var(--current-accent-light) 80%, var(--current-text-primary));
+  text-decoration: none;
+  /* 保持无下划线 */
+  filter: brightness(1.15);
+  /* 增加亮度 */
+  outline: none;
+  /* 移除默认聚焦轮廓 */
+}
+
+/* 链接获得键盘焦点的可视化指示器 */
+a:focus-visible {
+  outline: 2px dashed var(--current-accent-ink);
+  /* 使用墨迹强调色绘制虚线轮廓 */
+  outline-offset: 2px;
+  /* 轮廓向外偏移 */
+}
+
+/* Font Awesome 图标基础样式 */
+i.fas,
+i.far,
+i.fal,
+i.fad,
+i.fab {
+  text-shadow: 0 0 6px rgba(var(--current-accent-light-rgb), 0.25);
+  /* 给图标添加微妙的光晕阴影 */
+  /* 添加颜色、阴影、变形的过渡效果 */
+  transition: color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    text-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  display: inline-block;
+  /* 使图标可以应用变形 */
+  vertical-align: middle;
+  /* 垂直对齐 */
+}
+
+/* ==========================================================================
+   [ 5. Buttons and Interactive Elements ]
+   通用按钮、图标按钮和Lumina风格按钮家族的样式定义。
+   ========================================================================== */
+
+/* 按钮基础样式重置 */
+button {
+  font-family: inherit;
+  /* 继承父级字体 */
+  cursor: pointer;
+  /* 鼠标悬停时显示手型光标 */
+  border: none;
+  /* 移除边框 */
+  background: none;
+  /* 移除背景 */
+  padding: 0;
+  /* 移除内边距 */
+  color: inherit;
+  /* 继承父级文本颜色 */
+}
+
+/* 通用图标按钮样式 */
+.icon-btn {
+  color: var(--current-text-secondary);
+  /* 默认颜色使用辅助文本色 */
+  padding: calc(var(--spacing-unit) * 0.85);
+  /* 内边距 */
+  font-size: calc(var(--base-font-size) * 1.25);
+  /* 图标大小 */
+  line-height: 1;
+  /* 行高 */
+  border-radius: 50%;
+  /* 圆形 */
+  width: calc(var(--base-font-size) * 2.5);
+  /* 宽度 */
+  height: calc(var(--base-font-size) * 2.5);
+  /* 高度 */
+  display: inline-flex;
+  /* 使用Flexbox布局使其内容（图标）居中 */
+  align-items: center;
+  /* 垂直居中 */
+  justify-content: center;
+  /* 水平居中 */
+  flex-shrink: 0; /* 防止在flex容器中被压缩 */
+}
+
+/* 图标按钮悬停或聚焦时的样式 */
+.icon-btn:hover,
+.icon-btn:focus {
+  color: var(--current-accent-light);
+  /* 悬停时颜色变为光强调色 */
+  background-color: rgba(var(--current-accent-light-rgb), 0.1);
+  /* 添加半透明背景 */
+  transform: scale(1.1);
+  /* 略微放大 */
+  box-shadow: 0 0 12px rgba(var(--current-accent-light-rgb), 0.2);
+  /* 添加辉光阴影 */
+}
+
+/* 图标按钮获得键盘焦点的可视化指示器 */
+.icon-btn:focus-visible {
+  outline: 2px dashed var(--current-accent-ink);
+  /* 使用墨迹强调色绘制虚线轮廓 */
+  outline-offset: 2px;
+  /* 轮廓向外偏移 */
+}
+
+/* 确保图标按钮内的图标不受通用图标阴影影响 */
+.icon-btn i {
+  text-shadow: none;
+}
+
+/* Lumina 风格按钮基础样式 */
+.lumina-button {
+  display: inline-flex;
+  /* 使用Flexbox布局使其内容（图标+文本）居中或对齐 */
+  align-items: center;
+  /* 垂直居中 */
+  justify-content: center;
+  /* 水平居中 */
+  padding: calc(var(--spacing-unit) * 1.1) calc(var(--spacing-unit) * 2.2);
+  /* 内边距 */
+  font-family: var(--font-family-title);
+  /* 应用标题字体 */
+  font-size: calc(var(--base-font-size) * 0.92);
+  /* 字体大小 */
+  font-weight: 500;
+  /* 字体粗细 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+  cursor: pointer;
+  /* 鼠标悬停显示手型光标 */
+  text-decoration: none;
+  /* 移除下划线 */
+  letter-spacing: 1px;
+  /* 增加字符间距 */
+  position: relative;
+  /* 开启定位上下文，用于伪元素光效 */
+  overflow: hidden;
+  /* 隐藏溢出的伪元素 */
+  /* 添加所有可变属性的过渡效果 */
+  transition: all var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  border: var(--lumina-line-weight-thin) solid var(--current-accent-light);
+  /* 细边框，颜色使用光强调色 */
+  color: var(--current-accent-light);
+  /* 文本颜色使用光强调色 */
+  background-color: transparent;
+  /* 背景透明 */
+  box-shadow: inset 0 0 0 0 rgba(var(--current-accent-light-rgb), 0.15);
+  /* 默认无内阴影，用于悬停效果 */
+}
+
+/* Lumina 按钮内图标样式 */
+.lumina-button i {
+  margin-right: calc(var(--spacing-unit) * 0.8);
+  /* 图标与文本之间的间距 */
+  font-size: calc(var(--base-font-size) * 1.05);
+  /* 图标大小 */
+  line-height: 1;
+  /* 行高 */
+}
+
+/* Lumina 按钮的光效伪元素 */
+.lumina-button::before {
+  content: '';
+  /* 生成伪元素 */
+  position: absolute;
+  /* 绝对定位 */
+  top: 50%;
+  left: 50%;
+  /* 定位到按钮中心 */
+  width: 0;
+  height: 0;
+  /* 初始宽高为0 */
+  background-color: rgba(var(--current-accent-light-rgb), 0.2);
+  /* 背景颜色，半透明光强调色 */
+  border-radius: 50%;
+  /* 圆形 */
+  transform: translate(-50%, -50%);
+  /* 通过位移精确居中 */
+  opacity: 0;
+  /* 初始透明度为0 */
+  /* 添加宽高和透明度的过渡 */
+  transition: width var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    height var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    opacity var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+}
+
+/* Lumina 按钮悬停或聚焦时的样式 */
+.lumina-button:hover,
+.lumina-button:focus {
+  color: var(--current-text-primary);
+  /* 文本颜色变为主要文本色 */
+  border-color: var(--current-accent-light);
+  /* 边框颜色不变 */
+  /* 添加外部辉光和内部柔和阴影 */
+  box-shadow: 0 0 15px rgba(var(--current-accent-light-rgb), 0.3),
+    inset 0 0 10px rgba(var(--current-accent-light-rgb), 0.1);
+  transform: translateY(-2px);
+  /* 向上轻微抬升效果 */
+}
+
+/* 深色模式下 Lumina 按钮悬停/聚焦时，文本颜色特殊处理，变为背景色以获得更强的对比 */
+body[data-theme='dark-crystal'] .lumina-button:hover,
+body[data-theme="auto-crystal"].dark-crystal-active .lumina-button:hover,
+body[data-theme='dark-crystal'] .lumina-button:focus,
+body[data-theme="auto-crystal"].dark-crystal-active .lumina-button:focus {
+  color: var(--current-bg);
+  /* 文本颜色变为当前背景色 */
+}
+
+/* Lumina 按钮悬停时，光效伪元素的变化 */
+.lumina-button:hover::before {
+  width: 250%;
+  height: 250%;
+  /* 宽高放大，覆盖整个按钮 */
+  opacity: 1;
+  /* 透明度变为1 */
+}
+
+/* Lumina 按钮点击按下时的样式 */
+.lumina-button:active {
+  transform: translateY(0px) scale(0.98);
+  /* 回到原位并轻微缩小 */
+  box-shadow: inset 0 2px 5px rgba(var(--current-text-primary-rgb), 0.15);
+  /* 添加内凹阴影效果 */
+}
+
+/* Lumina 按钮禁用状态的样式 */
+.lumina-button:disabled,
+.lumina-button.disabled {
+  border-color: var(--current-text-secondary);
+  /* 边框颜色变为辅助文本色 */
+  color: var(--current-text-secondary);
+  /* 文本颜色变为辅助文本色 */
+  opacity: 0.5;
+  /* 降低透明度 */
+  cursor: not-allowed;
+  /* 鼠标悬停显示禁用光标 */
+  transform: none;
+  /* 移除变形效果 */
+  box-shadow: none;
+  /* 移除阴影 */
+  background-color: transparent;
+  /* 背景保持透明 */
+}
+
+/* Lumina 按钮禁用状态下隐藏光效伪元素 */
+.lumina-button:disabled::before,
+.lumina-button.disabled::before {
+  display: none;
+}
+
+/* Lumina 主按钮 (印章/点睛效果) */
+.lumina-button-primary {
+  border-color: var(--current-accent-ink);
+  /* 边框颜色使用墨迹强调色 */
+  color: var(--current-accent-ink);
+  /* 文本颜色使用墨迹强调色 */
+  font-weight: 700;
+  /* 字体加粗 */
+  box-shadow: 0 1px 3px rgba(var(--current-accent-ink-rgb), 0.2);
+  /* 添加微妙的外部阴影 */
+}
+
+/* Lumina 主按钮的光效伪元素颜色 */
+.lumina-button-primary::before {
+  background-color: rgba(var(--current-accent-ink-rgb), 0.2);
+  /* 光效颜色使用墨迹强调色 */
+}
+
+/* Lumina 主按钮悬停或聚焦时的样式 */
+.lumina-button-primary:hover,
+.lumina-button-primary:focus {
+  color: var(--current-text-primary);
+  /* 文本颜色变为主要文本色 */
+  border-color: var(--current-accent-ink);
+  /* 边框颜色不变 */
+  /* 添加更强的外部辉光和内部柔和阴影 */
+  box-shadow: 0 0 18px rgba(var(--current-accent-ink-rgb), 0.35),
+    inset 0 0 12px rgba(var(--current-accent-ink-rgb), 0.1);
+  /* 主按钮悬停时不改变Y轴位置 */
+  transform: none;
+}
+
+/* 深色模式下主按钮悬停/聚焦时，文本颜色特殊处理，变为背景色 */
+body[data-theme='dark-crystal'] .lumina-button-primary:hover,
+body[data-theme="auto-crystal"].dark-crystal-active .lumina-button-primary:hover,
+body[data-theme='dark-crystal'] .lumina-button-primary:focus,
+body[data-theme="auto-crystal"].dark-crystal-active .lumina-button-primary:focus {
+  color: var(--current-bg);
+  /* 文本颜色变为当前背景色 */
+}
+
+
+/* Lumina 侧边栏按钮样式 */
+.lumina-button-sidebar {
+  justify-content: flex-start;
+  /* 内容左对齐 */
+  text-transform: none;
+  /* 不改变文本大小写 */
+  font-size: var(--base-font-size);
+  /* 字体大小 */
+  font-weight: 400;
+  /* 字体粗细 */
+  border: none;
+  /* 无边框 */
+  color: var(--current-text-secondary);
+  /* 默认颜色使用辅助文本色 */
+  padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 1.8);
+  /* 内边距 */
+  width: 100%;
+  /* 宽度占满父容器 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+  /* 添加多种属性的过渡效果 */
+  transition: background-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    box-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+}
+
+/* Lumina 侧边栏按钮内图标样式 */
+.lumina-button-sidebar i {
+  margin-right: calc(var(--spacing-unit) * 1.5);
+  /* 图标与文本间距 */
+  width: 22px;
+  /* 固定图标区域宽度，确保文本对齐 */
+  text-align: center;
+  /* 图标在固定区域内居中 */
+  color: var(--current-accent-light);
+  /* 图标颜色使用光强调色 */
+  transition: transform var(--transition-duration-light-pulse) ease;
+  /* 图标变形过渡 */
+}
+
+/* 侧边栏按钮悬停或聚焦时的样式 */
+.lumina-button-sidebar:hover,
+.lumina-button-sidebar:focus {
+  background-color: rgba(var(--current-accent-light-rgb), 0.08);
+  /* 添加半透明背景 */
+  color: var(--current-text-primary);
+  /* 文本颜色变为主要文本色 */
+  transform: translateX(4px);
+  /* 向右轻微位移 */
+  box-shadow: -4px 0 0 0 var(--current-accent-light) inset;
+  /* 添加左侧光带效果 */
+}
+
+/* 侧边栏按钮悬停或聚焦时，图标的变形效果 */
+.lumina-button-sidebar:hover i,
+.lumina-button-sidebar:focus i {
+  transform: scale(1.15);
+  /* 图标轻微放大 */
+}
+
+/* 侧边栏按钮活动状态的样式 */
+.lumina-button-sidebar.active {
+  background-color: rgba(var(--current-accent-light-rgb), 0.15);
+  /* 添加更明显的半透明背景 */
+  color: var(--current-text-primary);
+  /* 文本颜色为主要文本色 */
+  font-weight: 500;
+  /* 字体加粗 */
+  /* 添加更宽的左侧光带和柔和外部阴影 */
+  box-shadow: -5px 0 0 0 var(--current-accent-light) inset,
+    0 0 10px rgba(var(--current-accent-light-rgb), 0.1);
+}
+
+/* 侧边栏按钮活动状态时，图标的样式 */
+.lumina-button-sidebar.active i {
+  color: var(--current-accent-light);
+  /* 图标颜色保持光强调色 */
+  transform: scale(1.1);
+  /* 图标轻微放大 */
+}
+
+/* ==========================================================================
+   [ 6. Layout and Structure ]
+   定义主要的布局容器和它们的排列方式。
+   ========================================================================== */
+
+/* 应用主容器，包裹整个应用界面 */
+.main-container {
+  opacity: 0;
+  transform: translateY(15px);
+  /* 初始状态透明并向下偏移，用于加载动画 */
+  /* 添加透明度和位移的过渡 */
+  transition: opacity var(--transition-duration-ink-flow) var(--transition-timing-function-lumina),
+    transform var(--transition-duration-ink-flow) var(--transition-timing-function-lumina);
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 子元素垂直排列 */
+  height: 100vh;
+  width: 100vw;
+  /* 占满整个视口 */
+}
+
+/* 主容器加载完成状态，显示并回到原位 */
+.main-container.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* App主体容器，包含左侧边栏和右侧聊天区域 */
+.app-body-container {
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-grow: 1;
+  /* 填充剩余垂直空间 */
+  overflow: hidden;
+  /* 隐藏溢出内容 */
+  position: relative;
+  /* 开启定位上下文 */
+  padding: var(--spacing-unit);
+  /* 外部内边距 */
+  gap: var(--spacing-unit);
+  /* 子元素（侧边栏和聊天区域）之间的间距 */
+}
+
+/* 当日志侧边栏打开时，调整聊天区域的右边距，为其腾出空间 */
+.app-body-container.with-process-log-open .chat-area {
+  margin-right: calc(var(--process-log-sidebar-width) + var(--spacing-unit));
+  /* 右边距 = 侧边栏宽度 + 间距 */
+  transition: margin-right var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+  /* 添加边距过渡 */
+}
+
+/* 当日志侧边栏折叠时，调整聊天区域的右边距，为其腾出折叠后的空间 */
+.app-body-container.with-process-log-open.log-sidebar-collapsed .chat-area {
+  margin-right: calc(var(--process-log-sidebar-width-collapsed) + var(--spacing-unit));
+  /* 右边距 = 折叠侧边栏宽度 + 间距 */
+}
+
+/* 聊天区域容器，包含聊天头部、消息列表和输入区 */
+.chat-area {
+  flex-grow: 1;
+  /* 填充剩余水平空间 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 聊天区域内部是列布局 */
+  overflow: hidden;
+  /* 隐藏溢出内容 */
+  transition: margin-right var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+  /* 添加右边距过渡，与侧边栏展开/折叠联动 */
+}
+
+/* 右侧日志侧边栏的布局和基础样式 */
+.process-log-sidebar.lumina-panel {
+  position: fixed;
+  /* 固定定位 */
+  top: calc(var(--header-height) + var(--spacing-unit));
+  /* 位于头部下方，留出间距 */
+  right: var(--spacing-unit);
+  /* 右侧对齐，留出间距 */
+  bottom: calc(var(--input-area-height) + var(--spacing-unit) * 2);
+  /* 位于输入区上方，留出间距 */
+  width: var(--process-log-sidebar-width);
+  /* 默认宽度（展开状态） */
+  z-index: var(--z-index-process-log);
+  /* 堆叠顺序 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 内部元素垂直排列 */
+  overflow: hidden;
+  /* 隐藏溢出内容 */
+  transform: translateX(calc(100% + var(--spacing-unit) * 2));
+  /* 初始状态向右移出屏幕 */
+  opacity: 0;
+  /* 初始状态透明 */
+  /* 添加变形、透明度和宽度的过渡 */
+  transition: transform var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    opacity var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    width var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+}
+
+/* 日志侧边栏可见状态，回到屏幕内并显示 */
+.process-log-sidebar.lumina-panel.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* 日志侧边栏折叠状态，宽度变窄 */
+.process-log-sidebar.lumina-panel.collapsed {
+  width: var(--process-log-sidebar-width-collapsed);
+  /* 变为折叠宽度 */
+}
+
+/* 日志侧边栏折叠时，隐藏日志内容区域和头部的文本（只保留图标） */
+.process-log-sidebar.lumina-panel.collapsed .process-log-content,
+.process-log-sidebar.lumina-panel.collapsed .process-log-header span {
+  display: none;
+}
+
+/* 日志侧边栏折叠时，头部内容水平居中 */
+.process-log-sidebar.lumina-panel.collapsed .process-log-header {
+  justify-content: center;
+}
+
+/* 折叠按钮箭头动画：折叠时左箭头旋转 */
+.process-log-sidebar.lumina-panel.collapsed #toggle-process-log-sidebar-collapse i.fa-chevron-left {
+  transform: rotate(180deg);
+}
+
+/* 折叠按钮箭头动画：折叠时右箭头恢复 */
+.process-log-sidebar.lumina-panel.collapsed #toggle-process-log-sidebar-collapse i.fa-chevron-right {
+  transform: rotate(0deg);
+}
+
+/* 折叠按钮箭头动画：未折叠时左箭头恢复 */
+.process-log-sidebar.lumina-panel:not(.collapsed) #toggle-process-log-sidebar-collapse i.fa-chevron-left {
+  transform: rotate(0deg);
+}
+
+/* 折叠按钮箭头动画：未折叠时右箭头旋转 */
+.process-log-sidebar.lumina-panel:not(.collapsed) #toggle-process-log-sidebar-collapse i.fa-chevron-right {
+  transform: rotate(180deg);
+}
+
+
+/* ==========================================================================
+   [ 7. Panel Base Styles ]
+   定义所有 Lumina 风格面板的基础视觉样式，包括背景、边框、阴影等。
+   ========================================================================== */
+
+/* 所有具有 .lumina-panel 类的元素的通用样式 */
+.lumina-panel {
+  background-color: var(--current-panel-bg);
+  /* 应用当前面板背景色 */
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 应用细边框和当前面板边框颜色 */
+  border-radius: var(--border-radius-soft);
+  /* 应用柔和圆角 */
+  /* 添加微妙的外部阴影 */
+  box-shadow: 0 5px 25px rgba(var(--current-text-primary-rgb), 0.05),
+    0 1px 3px rgba(var(--current-text-primary-rgb), 0.03);
+  backdrop-filter: blur(18px) saturate(120%);
+  /* 毛玻璃效果，模糊背景并增加饱和度 */
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  /* Webkit内核浏览器兼容 */
+  /* 添加背景、边框、阴影的过渡 */
+  transition: background-color var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    border-color var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    box-shadow var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+  position: relative;
+  /* 开启定位上下文，用于伪元素 */
+  background-image: var(--current-ink-texture);
+  /* 应用当前主题的背景纹理 */
+  background-blend-mode: overlay;
+  /* 背景纹理与背景色叠加模式 */
+}
+
+/* 面板内发光边框效果伪元素 */
+.lumina-panel::before {
+  content: "";
+  /* 生成伪元素 */
+  position: absolute;
+  /* 绝对定位 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 使伪元素覆盖整个面板 */
+  border-radius: inherit;
+  /* 继承父元素的圆角 */
+  /* 添加内阴影，模拟内发光效果和柔和边框 */
+  box-shadow: inset 0 0 12px rgba(var(--current-accent-light-rgb), 0.12),
+    inset 0 0 1px 1px rgba(var(--current-panel-bg-rgb), 0.7);
+  pointer-events: none;
+  /* 使伪元素不影响鼠标事件 */
+  z-index: 0;
+  /* 位于面板内容下方 */
+  opacity: 0.8;
+  /* 降低透明度 */
+}
+
+
+/* ==========================================================================
+   [ 8. Header ]
+   应用 Lumina 面板基础样式到头部，并定义头部特有布局和元素样式。
+   ========================================================================== */
+
+/* 头部应用 Lumina 面板样式，并进行特定调整 */
+.header.lumina-panel {
+  border-radius: 0 0 var(--border-radius-soft) var(--border-radius-soft);
+  /* 底部圆角，顶部直角 */
+  border-width: 0 0 var(--lumina-line-weight-thin) 0;
+  /* 只保留底部边框 */
+  border-bottom-color: var(--current-panel-border);
+  /* 底部边框颜色 */
+  padding: 0 calc(var(--spacing-unit) * 2.5);
+  /* 左右内边距 */
+  z-index: var(--z-index-header);
+  /* 堆叠顺序 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  justify-content: space-between;
+  /* 子元素分散对齐 */
+  align-items: center;
+  /* 子元素垂直居中 */
+  flex-shrink: 0;
+  /* 防止头部被压缩 */
+  height: var(--header-height);
+  /* 固定高度 */
+  position: relative;
+  /* 开启定位上下文，用于面板伪元素 */
+}
+
+/* Logo区域容器 */
+.header.lumina-panel .logo {
+  display: flex;
+  /* 使用Flexbox布局 */
+  align-items: center;
+  /* 垂直居中 */
+}
+
+/* Logo图标样式 */
+.header.lumina-panel .logo .logo-icon i {
+  color: var(--current-accent-light);
+  /* 图标颜色使用光强调色 */
+  font-size: calc(var(--base-font-size) * 1.9);
+  /* 图标大小 */
+  margin-right: calc(var(--spacing-unit) * 1.2);
+  /* 图标与标题间距 */
+  text-shadow: 0 0 8px var(--current-glow);
+  /* 图标添加辉光阴影 */
+}
+
+/* Logo标题样式 */
+.header.lumina-panel .logo h1 {
+  font-size: calc(var(--base-font-size) * 1.6);
+  /* 标题字体大小 */
+  color: var(--current-text-primary);
+  /* 标题颜色使用主要文本色 */
+  font-weight: 700;
+  /* 字体加粗 */
+  margin: 0;
+  /* 移除默认外边距 */
+  text-shadow: none;
+  /* 移除通用标题阴影 */
+}
+
+/* Logo标题中的'Pro'版本标识样式 */
+.header.lumina-panel .logo h1 .version-pro {
+  font-size: 0.65em;
+  /* 相对于父元素字体大小 */
+  color: var(--current-accent-ink);
+  /* 颜色使用墨迹强调色 */
+  margin-left: var(--spacing-unit);
+  /* 与主标题间距 */
+  font-weight: 500;
+  /* 字体粗细 */
+}
+
+/* Logo标题中版本号的样式 */
+.header.lumina-panel .logo h1 .version-pro .version-number {
+  font-size: 0.9em;
+  /* 相对于父元素（'Pro'）字体大小 */
+  opacity: 0.85;
+  /* 降低透明度 */
+}
+
+/* 头部右侧按钮容器 */
+.header.lumina-panel .header-buttons {
+  display: flex;
+  /* 使用Flexbox布局 */
+  gap: calc(var(--spacing-unit) * 0.75);
+  /* 按钮之间的间距 */
+}
+
+/* 头部图标按钮样式（应用通用icon-btn并调整大小） */
+.header.lumina-panel .header-buttons .header-btn.icon-btn {
+  width: calc(var(--header-height) * 0.6);
+  height: calc(var(--header-height) * 0.6);
+  /* 根据头部高度调整按钮大小 */
+  font-size: calc(var(--base-font-size) * 1.15);
+  /* 图标大小 */
+}
+
+/* 头部图标按钮中隐藏文本（仅显示图标） */
+.header.lumina-panel .header-buttons .header-btn.icon-btn span {
+  display: none;
+}
+
+/* ==========================================================================
+   [ 9. Sidebar (Left) ]
+   应用 Lumina 面板基础样式到左侧边栏，并定义侧边栏特有布局和元素样式。
+   ========================================================================== */
+
+/* 左侧边栏应用 Lumina 面板样式 */
+.sidebar.lumina-panel.left-sidebar {
+  border-radius: var(--border-radius-soft);
+  /* 应用柔和圆角 */
+  width: 280px;
+  /* 默认宽度（展开状态） */
+  flex-shrink: 0;
+  /* 防止侧边栏被压缩 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 内部元素垂直排列 */
+  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 1.5);
+  /* 默认内边距 */
+  /* 添加宽度和内边距的过渡 */
+  transition: width var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    padding var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+  overflow: hidden;
+  /* 隐藏溢出内容 */
+  z-index: var(--z-index-sidebar);
+  /* 堆叠顺序 */
+  position: relative;
+  /* 开启定位上下文，用于固定底部的按钮 */
+  padding-bottom: calc(var(--spacing-unit) * 8);
+  /* 底部留出足够的空间给固定在底部的按钮 */
+}
+
+/* 侧边栏收起状态下的样式 */
+.sidebar.lumina-panel.left-sidebar:not(.expanded) {
+  width: calc(var(--header-height) - var(--spacing-unit));
+  /* 收起后宽度变窄，约等于头部高度减去一些间距 */
+  padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 0.75);
+  /* 收起后调整内边距 */
+}
+
+/* 侧边栏收起状态下，隐藏文本元素（只保留图标） */
+.sidebar.lumina-panel.left-sidebar:not(.expanded) .sidebar-button span,
+.sidebar.lumina-panel.left-sidebar:not(.expanded) .session-manager-header span,
+.sidebar.lumina-panel.left-sidebar:not(.expanded) #create-new-session span,
+.sidebar.lumina-panel.left-sidebar:not(.expanded) .session-list {
+  display: none;
+}
+
+/* 侧边栏收起状态下，侧边栏按钮图标移除右边距（图标居中显示） */
+.sidebar.lumina-panel.left-sidebar:not(.expanded) .sidebar-button i {
+  margin-right: 0;
+}
+
+/* 侧边栏开关按钮样式 */
+.sidebar-toggle-btn {
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  /* 底部间距 */
+  align-self: flex-start;
+  /* 在Flex容器中靠左对齐 */
+}
+
+/* 侧边栏收起状态下，开关按钮居中对齐 */
+.sidebar.left-sidebar:not(.expanded) .sidebar-toggle-btn {
+  align-self: center;
+  /* 在Flex容器中居中对齐 */
+}
+
+/* 侧边栏内容包装器，用于实现内容区域的内部滚动 */
+.sidebar.lumina-panel.left-sidebar .sidebar-content-wrapper {
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 子元素垂直排列 */
+  gap: calc(var(--spacing-unit) * 2.5);
+  /* 子元素之间的间距 */
+  flex-grow: 1;
+  /* 填充剩余垂直空间 */
+  overflow-y: auto;
+  /* 垂直方向允许滚动 */
+  overflow-x: hidden;
+  /* 水平方向隐藏溢出 */
+  padding-right: calc(var(--spacing-unit) * 0.5);
+  /* 为自定义滚动条留出空间 */
+  margin-right: calc(var(--spacing-unit) * -0.5);
+  /* 负外边距抵消内边距，使内容区域宽度不变 */
+}
+
+/* 侧边栏主操作按钮组容器 */
+.sidebar.lumina-panel.left-sidebar .sidebar-main-actions {
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 子元素垂直排列 */
+  gap: calc(var(--spacing-unit) * 0.75);
+  /* 按钮之间的间距 */
+}
+
+/* 会话管理器容器 */
+/* 此处规则集原为空，已移除。特定样式直接应用于其子元素。 */
+
+/* 会话管理器头部及折叠开关样式 */
+.sidebar.lumina-panel.left-sidebar .session-manager .session-manager-header {
+  color: var(--current-text-primary);
+  /* 文本颜色使用主要文本色 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  justify-content: space-between;
+  /* 子元素分散对齐 */
+  align-items: center;
+  /* 垂直居中 */
+  padding: calc(var(--spacing-unit) * 1.2) 0;
+  /* 上下内边距，左右无内边距 */
+  cursor: pointer;
+  /* 鼠标悬停显示手型光标 */
+  font-family: var(--font-family-title);
+  /* 应用标题字体 */
+  font-size: calc(var(--base-font-size) * 1.05);
+  /* 字体大小 */
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 底部细边框 */
+  margin-bottom: var(--spacing-unit);
+  /* 底部外边距 */
+  transition: color var(--transition-duration-light-pulse) ease;
+  /* 添加颜色过渡 */
+}
+
+/* 会话管理器头部悬停时的颜色变化 */
+.sidebar.lumina-panel.left-sidebar .session-manager .session-manager-header:hover {
+  color: var(--current-accent-light);
+  /* 悬停时颜色变为光强调色 */
+}
+
+/* 会话管理器头部标题前的图标样式 */
+.sidebar.lumina-panel.left-sidebar .session-manager .session-manager-header span i {
+  margin-right: var(--spacing-unit);
+  /* 图标与文本间距 */
+  color: var(--current-accent-ink);
+  /* 图标颜色使用墨迹强调色 */
+}
+
+/* 会话管理器头部折叠/展开开关图标样式 */
+.sidebar.lumina-panel.left-sidebar .session-manager .session-manager-header .toggle-icon {
+  transition: transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  /* 添加变形过渡 */
+  color: var(--current-text-secondary);
+  /* 图标颜色使用辅助文本色 */
+}
+
+/* 箭头旋转动画：会话管理器折叠时，向下箭头旋转 */
+.sidebar.lumina-panel.left-sidebar .session-manager.collapsed .session-manager-header .toggle-icon.fa-caret-down {
+  transform: rotate(-90deg);
+}
+
+/* 箭头旋转动画：会话管理器未折叠时，向右箭头恢复 */
+.sidebar.lumina-panel.left-sidebar .session-manager:not(.collapsed) .session-manager-header .toggle-icon.fa-caret-right {
+  transform: rotate(0deg);
+}
+
+/* 会话列表容器 (控制滚动和折叠动画) */
+.sidebar.lumina-panel.left-sidebar .session-list-container {
+  max-height: 280px;
+  /* 默认最大高度，用于未折叠状态下的滚动 */
+  overflow-y: auto;
+  /* 垂直方向允许滚动 */
+  /* 添加最大高度、内边距和透明度的过渡，用于折叠/展开动画 */
+  transition: max-height var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    padding var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+    opacity var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+  padding-bottom: var(--spacing-unit);
+  /* 底部内边距 */
+}
+
+/* 会话列表容器折叠状态（通过JS控制max-height为0实现隐藏动画） */
+.sidebar.lumina-panel.left-sidebar .session-manager.collapsed .session-list-container {
+  max-height: 0;
+  /* 折叠时高度为0 */
+  padding-bottom: 0;
+  /* 移除底部内边距 */
+  opacity: 0;
+  /* 透明度变为0 */
+}
+
+
+/* 会话列表无序列表样式 */
+.sidebar.lumina-panel.left-sidebar .session-list {
+  list-style: none;
+  /* 移除列表默认标记 */
+  padding: 0;
+  /* 移除默认内边距 */
+}
+
+/* 会话列表项样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item {
+  color: var(--current-text-secondary);
+  /* 默认颜色使用辅助文本色 */
+  padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 1.2);
+  /* 内边距 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+  margin-bottom: calc(var(--spacing-unit) * 0.6);
+  /* 底部外边距 */
+  cursor: pointer;
+  /* 鼠标悬停显示手型光标 */
+  /* 添加背景、颜色、阴影的过渡 */
+  transition: background-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    box-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  font-size: calc(var(--base-font-size) * 0.88);
+  /* 字体大小 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  justify-content: space-between;
+  /* 内容与删除按钮分散对齐 */
+  align-items: center;
+  /* 垂直居中 */
+  position: relative;
+  /* 开启定位上下文，用于伪元素 */
+}
+
+/* 会话列表项左侧光带/墨痕效果 (伪元素) */
+.sidebar.lumina-panel.left-sidebar .session-list-item::before {
+  content: '';
+  /* 生成伪元素 */
+  position: absolute;
+  /* 绝对定位 */
+  left: 0;
+  /* 位于最左侧 */
+  top: 15%;
+  bottom: 15%;
+  /* 上下留白 */
+  width: 3px;
+  /* 宽度 */
+  background-color: var(--current-accent-ink);
+  /* 默认颜色使用墨迹强调色 */
+  border-radius: 0 2px 2px 0;
+  /* 右侧圆角 */
+  opacity: 0;
+  /* 初始透明度为0 */
+  transform: scaleX(0);
+  /* 初始水平缩放为0 */
+  transform-origin: left;
+  /* 变形原点在左侧 */
+  transition: opacity var(--transition-duration-light-pulse) ease, transform var(--transition-duration-light-pulse) ease;
+  /* 添加透明度和变形过渡 */
+}
+
+/* 会话列表项悬停时的样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item:hover {
+  background-color: rgba(var(--current-panel-bg-rgb), 0.6);
+  /* 添加半透明背景 */
+  color: var(--current-text-primary);
+  /* 文本颜色变为主要文本色 */
+  box-shadow: 0 2px 8px rgba(var(--current-text-primary-rgb), 0.05);
+  /* 添加柔和阴影 */
+}
+
+/* 会话列表项悬停时，左侧光带伪元素的变化 */
+.sidebar.lumina-panel.left-sidebar .session-list-item:hover::before {
+  opacity: 0.7;
+  /* 透明度增加 */
+  transform: scaleX(1);
+  /* 水平缩放恢复，显示光带 */
+}
+
+/* 活动会话列表项的样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item.active-session {
+  background-color: rgba(var(--current-accent-light-rgb), 0.1);
+  /* 添加半透明光强调色背景 */
+  color: var(--current-text-primary);
+  /* 文本颜色为主要文本色 */
+  font-weight: 500;
+  /* 字体加粗 */
+}
+
+/* 活动会话列表项的左侧光带伪元素样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item.active-session::before {
+  background-color: var(--current-accent-light);
+  /* 颜色变为光强调色 */
+  opacity: 1;
+  /* 完全不透明 */
+  transform: scaleX(1);
+  /* 显示光带 */
+  box-shadow: 0 0 5px var(--current-glow);
+  /* 添加辉光效果 */
+}
+
+/* 会话列表项内容包装器，包含会话名称和时间戳 */
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-item-content {
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 子元素垂直排列 */
+  flex-grow: 1;
+  /* 填充剩余水平空间 */
+  overflow: hidden;
+  /* 隐藏溢出内容 */
+  margin-right: var(--spacing-unit);
+  /* 与右侧删除按钮保持间距 */
+}
+
+/* 会话名称样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-name {
+  white-space: nowrap;
+  /* 防止换行 */
+  overflow: hidden;
+  /* 隐藏溢出文本 */
+  text-overflow: ellipsis;
+  /* 溢出文本显示省略号 */
+  font-weight: 500;
+  /* 字体粗细 */
+}
+
+/* 会话时间戳样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-time {
+  font-size: 0.82em;
+  /* 相对于父元素字体大小 */
+  opacity: 0.75;
+  /* 降低透明度 */
+}
+
+/* 会话删除按钮样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-delete-btn {
+  color: var(--lumina-error-color);
+  /* 颜色使用错误状态色 */
+  opacity: 0.6;
+  /* 降低透明度 */
+  width: auto;
+  height: auto;
+  /* 宽高自适应 */
+  font-size: calc(var(--base-font-size) * 0.95);
+  /* 字体大小 */
+  padding: calc(var(--spacing-unit) * 0.5);
+  /* 内边距 */
+}
+
+/* 会话删除按钮悬停或聚焦时的样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-delete-btn:hover,
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-delete-btn:focus {
+  opacity: 1;
+  /* 完全不透明 */
+  background-color: rgba(var(--lumina-error-color-rgb), 0.1);
+  /* 添加半透明背景 */
+  color: var(--lumina-error-color);
+  /* 颜色保持错误状态色 */
+}
+
+/* 空列表项（如“暂无会话”）的样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item.session-list-empty {
+  text-align: center;
+  /* 文本居中 */
+  opacity: 0.6;
+  /* 降低透明度 */
+  cursor: default;
+  /* 鼠标悬停显示默认光标 */
+  font-style: italic;
+  /* 斜体 */
+}
+
+/* 空列表项图标的样式 */
+.sidebar.lumina-panel.left-sidebar .session-list-item.session-list-empty i {
+  margin-right: var(--spacing-unit);
+  /* 图标与文本间距 */
+}
+
+/* 空列表项悬停时，移除背景效果 */
+.sidebar.lumina-panel.left-sidebar .session-list-item.session-list-empty:hover {
+  background-color: transparent;
+}
+
+/* 空列表项不显示左侧光带伪元素 */
+.sidebar.lumina-panel.left-sidebar .session-list-item.session-list-empty::before {
+  display: none;
+}
+
+/* 新建会话按钮 (固定在左侧边栏底部) */
+#create-new-session.lumina-button-primary.lumina-button-fixed-bottom {
+  position: absolute;
+  /* 绝对定位 */
+  bottom: calc(var(--spacing-unit) * 2);
+  /* 距离底部距离 */
+  left: calc(var(--spacing-unit) * 1.5);
+  right: calc(var(--spacing-unit) * 1.5);
+  /* 左右距离与侧边栏内边距对齐 */
+  width: auto;
+  /* 宽度自适应 */
+  max-width: calc(100% - var(--spacing-unit) * 3);
+  /* 最大宽度为父容器宽度减去左右内边距 */
+  z-index: 10;
+  /* 确保按钮在侧边栏内容之上 */
+  /* 添加更强的阴影，模拟印章突出效果 */
+  box-shadow: 0 3px 10px rgba(var(--current-accent-ink-rgb), 0.25),
+    0 0 8px rgba(var(--current-accent-ink-rgb), 0.15);
+  padding-top: calc(var(--spacing-unit) * 1.25);
+  padding-bottom: calc(var(--spacing-unit) * 1.25);
+  /* 调整上下内边距 */
+  margin-top: 0;
+  /* 移除可能的默认顶部外边距 */
+}
+
+/* 根据浅色主题微调新建会话按钮的背景和文本颜色，使其更像印章 */
+body[data-theme="light-crystal"] #create-new-session.lumina-button-primary.lumina-button-fixed-bottom,
+body[data-theme="auto-crystal"].light-crystal-active #create-new-session.lumina-button-primary.lumina-button-fixed-bottom {
+  background-color: var(--current-accent-ink);
+  /* 背景色使用墨迹强调色 */
+  color: var(--lumina-bg-light);
+  /* 文本颜色使用浅色主题背景色 */
+  border-color: var(--current-accent-ink);
+  /* 边框颜色使用墨迹强调色 */
+}
+
+/* 根据深色主题微调新建会话按钮的背景和文本颜色，使其更像金印 */
+body[data-theme="dark-crystal"] #create-new-session.lumina-button-primary.lumina-button-fixed-bottom,
+body[data-theme="auto-crystal"].dark-crystal-active #create-new-session.lumina-button-primary.lumina-button-fixed-bottom {
+  background-color: var(--current-accent-ink);
+  /* 背景色使用墨迹强调色 */
+  color: var(--lumina-bg-dark);
+  /* 文本颜色使用深色主题背景色 */
+  border-color: var(--current-accent-ink);
+  /* 边框颜色使用墨迹强调色 */
+}
+
+/* 新建会话按钮悬停/聚焦状态的样式 */
+#create-new-session.lumina-button-primary.lumina-button-fixed-bottom:hover,
+#create-new-session.lumina-button-primary.lumina-button-fixed-bottom:focus {
+  filter: brightness(1.1);
+  /* 增加亮度 */
+  transform: translateY(-1px) scale(1.02);
+  /* 向上轻微抬升并放大 */
+  box-shadow: 0 4px 12px rgba(var(--current-accent-ink-rgb), 0.35),
+    0 0 15px rgba(var(--current-accent-ink-rgb), 0.25);
+  /* 增强阴影和辉光效果 */
+}
+
+/* 侧边栏收起状态下，固定按钮的样式调整 */
+.sidebar.lumina-panel.left-sidebar:not(.expanded) #create-new-session.lumina-button-fixed-bottom {
+  width: calc(100% - var(--spacing-unit) * 1.5);
+  /* 宽度调整 */
+  left: calc(var(--spacing-unit) * 0.75);
+  right: calc(var(--spacing-unit) * 0.75);
+  /* 左右位置调整 */
+  bottom: calc(var(--spacing-unit) * 1.5);
+  /* 底部位置调整 */
+  padding: calc(var(--spacing-unit) * 1);
+  /* 调整内边距 */
+}
+
+/* 侧边栏收起状态下，固定按钮中的文本隐藏 */
+.sidebar.lumina-panel.left-sidebar:not(.expanded) #create-new-session.lumina-button-fixed-bottom span {
+  display: none;
+}
+
+/* 侧边栏收起状态下，固定按钮中的图标移除右边距 */
+.sidebar.lumina-panel.left-sidebar:not(.expanded) #create-new-session.lumina-button-fixed-bottom i {
+  margin-right: 0;
+}
+
+/* ==========================================================================
+   [ 10. Chat Area ]
+   应用 Lumina 面板基础样式到聊天区域内容面板，并定义聊天区域特有布局和元素样式。
+   ========================================================================== */
+
+/* 聊天区域主要内容面板，应用 Lumina 面板样式 */
+.chat-area-content.lumina-panel.main-chat-panel {
+  flex-grow: 1;
+  /* 填充剩余垂直空间 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 内部元素垂直排列 */
+  overflow: hidden;
+  /* 隐藏溢出内容 */
+  position: relative;
+  /* 开启定位上下文，用于文件预览区 */
+}
+
+/* 聊天头部，显示当前会话名称 */
+.chat-area-content.lumina-panel.main-chat-panel .chat-header {
+  display: flex;
+  /* 使用Flexbox布局 */
+  justify-content: space-between;
+  /* 标题与编辑按钮分散对齐 */
+  align-items: center;
+  /* 垂直居中 */
+  padding: var(--spacing-unit) calc(var(--spacing-unit) * 2.5);
+  /* 内边距 */
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 底部细边框 */
+  flex-shrink: 0;
+  /* 防止头部被压缩 */
+  height: calc(var(--header-height) * 0.8);
+  /* 高度略小于主头部 */
+}
+
+/* 聊天头部会话名称标题样式 */
+.chat-area-content.lumina-panel.main-chat-panel .chat-header h2 {
+  font-size: calc(var(--base-font-size) * 1.15);
+  /* 字体大小 */
+  margin: 0;
+  /* 移除默认外边距 */
+  font-weight: 500;
+  /* 字体粗细 */
+  color: var(--current-text-primary);
+  /* 颜色使用主要文本色 */
+  flex-grow: 1;
+  /* 填充剩余空间 */
+  white-space: nowrap;
+  /* 防止换行 */
+  overflow: hidden;
+  /* 隐藏溢出文本 */
+  text-overflow: ellipsis;
+  /* 溢出文本显示省略号 */
+  text-shadow: none;
+  /* 移除通用标题阴影 */
+}
+
+/* 聊天头部编辑按钮（应用通用icon-btn样式） */
+/* 此规则集原为空，已移除。特定样式由 .icon-btn 提供。 */
+
+/* 聊天消息框容器，用于显示所有消息 */
+.chat-box {
+  flex-grow: 1;
+  /* 填充剩余垂直空间 */
+  padding: calc(var(--spacing-unit) * 2.5);
+  /* 内边距 */
+  overflow-y: auto;
+  /* 垂直方向允许滚动 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 子元素（消息）垂直排列 */
+  gap: calc(var(--spacing-unit) * 2.5);
+  /* 消息之间的间距 */
+  position: relative;
+  /* 开启定位上下文 */
+}
+
+/* ==========================================================================
+   [ 11. Message Elements ]
+   定义聊天消息（用户、Agent、系统消息）及其内部元素的样式和布局。
+   ========================================================================== */
+
+/* 消息整体容器布局，默认Agent消息样式 */
+.chat-box .message {
+  display: flex;
+  /* 使用Flexbox布局 */
+  align-items: flex-start;
+  /* 头像和气泡顶部对齐 */
+  max-width: 90%;
+  /* 最大宽度限制，防止消息过长 */
+}
+
+/* 用户消息布局 (头像在右，气泡在右) */
+.chat-box .message.message-user {
+  align-self: flex-end;
+  /* 在Flex容器中靠右对齐 */
+  flex-direction: row-reverse;
+  /* 反转主轴方向，使头像在右侧 */
+}
+
+/* Agent消息布局 (头像在左，气泡在左) */
+.chat-box .message.message-agent {
+  align-self: flex-start;
+  /* 在Flex容器中靠左对齐 */
+  /* 默认flex-direction为row，已满足布局需求 */
+}
+
+/* 系统消息布局 (无头像，居中显示) */
+.chat-box .message.system-message {
+  align-self: center;
+  /* 在Flex容器中水平居中 */
+  max-width: 85%;
+  /* 最大宽度略小于普通消息 */
+  width: fit-content;
+  /* 宽度自适应内容 */
+  font-size: calc(var(--base-font-size) * 0.88);
+  /* 字体大小 */
+  text-align: center;
+  /* 文本居中 */
+  color: var(--current-text-secondary);
+  /* 颜色使用辅助文本色 */
+  opacity: 0.8;
+  /* 降低透明度 */
+  display: block;
+  /* 使用块级显示，不参与Flexbox布局 */
+}
+
+/* 欢迎消息布局 (拉伸并居中)，同时应用面板样式 */
+.chat-box .message.system-message-initial.lumina-panel {
+  align-self: stretch;
+  /* 在Flex容器中拉伸填充 */
+  width: auto;
+  /* 宽度自适应 */
+  max-width: 95%;
+  /* 最大宽度 */
+  margin: var(--spacing-unit) auto;
+  /* 上下间距，左右自动外边距实现水平居中 */
+  text-align: left;
+  /* 文本左对齐 */
+  opacity: 1;
+  /* 完全不透明 */
+}
+
+/* 消息气泡的样式 */
+.chat-box .message .message-bubble {
+  background-color: var(--current-panel-bg);
+  /* 背景色使用当前面板背景色 */
+  border-radius: var(--border-radius-soft);
+  /* 应用柔和圆角 */
+  padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
+  /* 内边距 */
+  /* 添加微妙的阴影 */
+  box-shadow: 0 3px 10px rgba(var(--current-text-primary-rgb), 0.04),
+    0 1px 2px rgba(var(--current-text-primary-rgb), 0.02);
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 应用细边框 */
+  max-width: 100%;
+  /* 最大宽度为父容器的100% */
+  word-break: break-word;
+  /* 强制长单词或URL换行 */
+  position: relative;
+  /* 开启定位上下文，用于复制按钮 */
+  background-blend-mode: multiply;
+  /* 背景混合模式 */
+  /* 添加变形和阴影过渡 */
+  transition: transform var(--transition-duration-light-pulse) ease,
+    box-shadow var(--transition-duration-light-pulse) ease;
+  flex-grow: 0;
+  /* 不拉伸 */
+  flex-shrink: 1;
+  /* 允许缩小 */
+}
+
+/* 消息气泡悬停状态的样式 */
+.chat-box .message:hover .message-bubble {
+  transform: translateY(-1px);
+  /* 向上轻微抬升效果 */
+  box-shadow: 0 5px 15px rgba(var(--current-text-primary-rgb), 0.06),
+    0 2px 5px rgba(var(--current-text-primary-rgb), 0.03);
+  /* 悬停时阴影增强 */
+}
+
+/* 用户消息气泡的样式 */
+.chat-box .message.message-user .message-bubble {
+  background-color: rgba(var(--current-accent-light-rgb), 0.12);
+  /* 背景色使用半透明光强调色 */
+  border-color: rgba(var(--current-accent-light-rgb), 0.3);
+  /* 边框颜色使用半透明光强调色 */
+  color: var(--current-text-primary);
+  /* 文本颜色使用主要文本色 */
+}
+
+/* 用户消息气泡内的链接颜色 */
+.chat-box .message.message-user .message-bubble a {
+  color: var(--current-accent-light);
+  /* 链接颜色使用光强调色 */
+}
+
+/* Agent 消息气泡的样式 */
+/* 此规则集原为空，已移除。默认样式已应用于 .message-bubble。 */
+
+/* 系统消息气泡的样式 */
+.chat-box .message.system-message .message-bubble {
+  background-color: transparent;
+  /* 背景透明 */
+  border: var(--lumina-line-weight-thin) dashed rgba(var(--current-panel-border-rgb), 0.6);
+  /* 使用虚线边框 */
+  box-shadow: none;
+  /* 移除阴影 */
+  padding: calc(var(--spacing-unit) * 1.2);
+  /* 调整内边距 */
+}
+
+/* 错误系统消息气泡的样式 */
+.chat-box .message.system-message.error-message .message-bubble {
+  border-color: var(--lumina-error-color);
+  /* 边框颜色使用错误状态色 */
+  color: var(--lumina-error-color);
+  /* 文本颜色使用错误状态色 */
+}
+
+
+/* 消息头像的样式 */
+.chat-box .message .message-avatar {
+  width: 38px;
+  height: 38px;
+  /* 固定宽高 */
+  border-radius: 50%;
+  /* 圆形 */
+  background-color: var(--current-panel-border);
+  /* 背景色使用面板边框颜色 */
+  display: flex;
+  /* 使用Flexbox布局使其内容（图标）居中 */
+  align-items: center;
+  justify-content: center;
+  /* 水平垂直居中 */
+  flex-shrink: 0;
+  /* 防止头像被压缩 */
+  /* 调整 margin，确保头像和气泡在同一行 */
+  margin-right: calc(var(--spacing-unit) * 1.25);
+  /* Agent头像在左，右边距与气泡产生间距 */
+  box-shadow: 0 1px 3px rgba(var(--current-text-primary-rgb), 0.08);
+  /* 添加柔和阴影 */
+  transition: transform var(--transition-duration-light-pulse) ease;
+  /* 添加变形过渡 */
+}
+
+/* 消息头像悬停状态的样式 */
+.chat-box .message:hover .message-avatar {
+  transform: scale(1.05);
+  /* 轻微放大效果 */
+}
+
+/* 消息头像内的图标样式 */
+.chat-box .message .message-avatar i {
+  font-size: calc(var(--base-font-size) * 1.2);
+  /* 图标大小 */
+  color: var(--current-text-secondary);
+  /* 图标颜色使用辅助文本色 */
+}
+
+/* 用户消息头像 (在气泡右侧) 的样式 */
+.chat-box .message.message-user .message-avatar {
+  margin-right: 0;
+  /* 移除右边距 */
+  margin-left: calc(var(--spacing-unit) * 1.25);
+  /* 左边距与气泡产生间距 */
+  background-color: var(--current-accent-light);
+  /* 背景色使用光强调色 */
+}
+
+/* 用户消息头像内的图标颜色 */
+.chat-box .message.message-user .message-avatar i {
+  color: var(--current-bg);
+  /* 图标颜色使用当前背景色（与光强调色背景形成对比） */
+}
+
+/* Agent消息头像 (在气泡左侧) 的样式 */
+.chat-box .message.message-agent .message-avatar {
+  background-color: var(--current-accent-ink);
+  /* 背景色使用墨迹强调色 */
+}
+
+/* Agent消息头像内的图标颜色 */
+.chat-box .message.message-agent .message-avatar i {
+  color: var(--current-bg);
+  /* 图标颜色使用当前背景色（与墨迹强调色背景形成对比） */
+}
+
+/* 系统消息没有头像，隐藏头像元素 */
+.chat-box .message.system-message .message-avatar {
+  display: none;
+}
+
+
+/* 消息内容包装器 (包含思考过程和文本内容) */
+.chat-box .message .message-content-wrapper {
+  /* 此处规则集原为空，保留作容器用途。 */
+
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 子元素垂直排列 */
+  gap: calc(var(--spacing-unit) * 1.5);
+
+}
+
+/* 思考过程前缀（Thinking Process）的样式 */
+.chat-box .message .message-thought-prefix {
+  margin-bottom: calc(var(--spacing-unit) * 1.5);
+  /* 底部外边距 */
+  padding: calc(var(--spacing-unit) * 1.2);
+  /* 内边距 */
+  background-color: rgba(var(--current-panel-bg-rgb), 0.4);
+  /* 半透明背景色 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+  border: var(--lumina-line-weight-thin) dashed rgba(var(--current-panel-border-rgb), 0.7);
+  /* 使用虚线边框 */
+  font-size: 0.88em;
+  /* 字体大小 */
+  color: var(--current-text-secondary);
+  /* 文本颜色使用辅助文本色 */
+}
+
+/* 思考过程前缀中的标题（如“Thinking Process:”）样式 */
+.chat-box .message .message-thought-prefix strong {
+  display: block;
+  /* 块级显示 */
+  margin-bottom: calc(var(--spacing-unit) * 0.75);
+  /* 底部外边距 */
+  font-family: var(--font-family-title);
+  /* 应用标题字体 */
+  color: var(--current-accent-ink);
+  /* 颜色使用墨迹强调色 */
+  font-weight: 500;
+  /* 字体粗细 */
+}
+
+/* 思考过程前缀标题内的图标样式 */
+.chat-box .message .message-thought-prefix strong i {
+  margin-right: var(--spacing-unit);
+  /* 图标与文本间距 */
+}
+
+/* 思考过程内容的容器，用于控制滚动 */
+.chat-box .message .message-thought-prefix .think-bubble-content {
+  line-height: 1.5;
+  /* 行高 */
+  max-height: 200px;
+  /* 最大高度，超出则滚动 */
+  overflow-y: auto;
+  /* 垂直方向允许滚动 */
+  padding-right: var(--spacing-unit);
+  /* 为可能出现的滚动条留出空间 */
+}
+
+/* 思考内容中嵌入的 JSON 美化样式 */
+.chat-box .message .message-thought-prefix .think-bubble-content pre.embedded-json {
+  background-color: rgba(var(--current-bg-rgb), 0.3);
+  /* 半透明背景色 */
+  padding: calc(var(--spacing-unit) * 1);
+  /* 内边距 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+  margin-top: var(--spacing-unit);
+  /* 顶部外边距 */
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  /* 等宽字体 */
+  font-size: 0.92em;
+  /* 字体大小 */
+  color: var(--current-text-secondary);
+  /* 颜色使用辅助文本色 */
+  border: 1px solid rgba(var(--current-panel-border-rgb), 0.3);
+  /* 细边框 */
+  white-space: pre-wrap; /* 允许换行 */
+  word-break: break-all; /* 强制长单词或 URL 换行 */
+}
+
+/* 思考内容中嵌入的错误状态 JSON 样式 */
+.chat-box .message .message-thought-prefix .think-bubble-content pre.embedded-json.error {
+  color: var(--lumina-error-color);
+  /* 颜色使用错误状态色 */
+  border-color: var(--lumina-error-color);
+  /* 边框颜色使用错误状态色 */
+}
+
+/* 消息主要文本内容的样式 */
+.chat-box .message .message-text-content {
+  line-height: 1.65;
+  /* 行高 */
+}
+
+/* 消息文本内容中外部链接图标的样式 */
+.chat-box .message .message-text-content a.external-link i {
+  font-size: 0.82em;
+  /* 图标大小 */
+  margin-right: 4px;
+  /* 图标与文本间距 */
+  opacity: 0.75;
+  /* 降低透明度 */
+}
+
+/* 附件摘要区域的样式 */
+.chat-box .message .message-attachments-summary {
+  margin-top: calc(var(--spacing-unit) * 1.2);
+  /* 顶部外边距 */
+  font-size: 0.82em;
+  /* 字体大小 */
+  opacity: 0.85;
+  /* 降低透明度 */
+  color: var(--current-text-secondary);
+  /* 颜色使用辅助文本色 */
+}
+
+/* 附件摘要区域图标的样式 */
+.chat-box .message .message-attachments-summary i {
+  margin-right: calc(var(--spacing-unit) * 0.6);
+  /* 图标与文本间距 */
+}
+
+/* 附件摘要中的文件名“芯片”样式 */
+.chat-box .message .message-attachments-summary .filename-chip {
+  display: inline-block;
+  /* 内联块级显示 */
+  background-color: rgba(var(--current-panel-border-rgb), 0.5);
+  /* 半透明背景色 */
+  color: var(--current-text-secondary);
+  /* 文本颜色使用辅助文本色 */
+  padding: 3px calc(var(--spacing-unit) * 0.75);
+  /* 内边距 */
+  border-radius: 12px;
+  /* 应用较大圆角，形成芯片形状 */
+  font-size: 0.92em;
+  /* 字体大小 */
+}
+
+/* 欢迎消息的特定样式 (继承自 .system-message-initial.lumina-panel) */
+.chat-box .message.system-message-initial.lumina-panel {
+  padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 3);
+  /* 调整内边距 */
+  border-width: var(--lumina-line-weight-medium);
+  /* 边框使用中等粗细 */
+}
+
+/* 欢迎消息头部的样式 */
+.chat-box .message.system-message-initial.lumina-panel .welcome-header {
+  display: flex;
+  /* 使用Flexbox布局 */
+  align-items: center;
+  /* 垂直居中 */
+  margin-bottom: calc(var(--spacing-unit) * 1.5);
+  /* 底部外边距 */
+}
+
+/* 欢迎消息头部机器人图标样式 */
+.chat-box .message.system-message-initial.lumina-panel .welcome-header .robot-icon {
+  color: var(--current-accent-light);
+  /* 颜色使用光强调色 */
+  font-size: calc(var(--base-font-size) * 2.8);
+  /* 图标大小 */
+  margin-right: calc(var(--spacing-unit) * 1.5);
+  /* 图标与标题间距 */
+  text-shadow: 0 0 12px var(--current-glow);
+  /* 添加辉光阴影 */
+}
+
+/* 欢迎消息头部标题样式 */
+.chat-box .message.system-message-initial.lumina-panel .welcome-header h2 {
+  font-size: calc(var(--base-font-size) * 1.9);
+  /* 字体大小 */
+  margin-bottom: 0;
+  /* 移除默认底部外边距 */
+  font-weight: 700;
+  /* 字体加粗 */
+}
+
+/* 欢迎消息头部标题中的'Pro'版本标识样式 */
+.chat-box .message.system-message-initial.lumina-panel .welcome-header h2 .version-pro {
+  font-size: 0.6em;
+  /* 相对于父元素字体大小 */
+  color: var(--current-accent-ink);
+  /* 颜色使用墨迹强调色 */
+}
+
+/* 欢迎消息头部标题中版本号的样式 */
+.chat-box .message.system-message-initial.lumina-panel .welcome-header h2 .version-number {
+  opacity: 0.8;
+  /* 降低透明度 */
+}
+
+/* 欢迎消息能力列表容器样式 */
+.chat-box .message.system-message-initial.lumina-panel .capabilities {
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-wrap: wrap;
+  /* 允许换行 */
+  gap: calc(var(--spacing-unit) * 1.2);
+  /* 项目之间的间距 */
+  margin-bottom: calc(var(--spacing-unit) * 2.5);
+  /* 底部外边距 */
+}
+
+/* 欢迎消息能力“芯片”样式 */
+.chat-box .message.system-message-initial.lumina-panel .capabilities .capability {
+  background-color: rgba(var(--current-accent-light-rgb), 0.06);
+  /* 半透明背景色 */
+  border: var(--lumina-line-weight-thin) solid rgba(var(--current-accent-light-rgb), 0.2);
+  /* 细边框 */
+  padding: calc(var(--spacing-unit) * 0.6) calc(var(--spacing-unit) * 1.2);
+  /* 内边距 */
+  border-radius: 18px;
+  /* 应用较大圆角，形成芯片形状 */
+  font-size: 0.88em;
+  /* 字体大小 */
+  display: inline-flex;
+  /* 内联Flexbox布局 */
+  align-items: center;
+  /* 垂直居中 */
+  color: var(--current-text-secondary);
+  /* 文本颜色使用辅助文本色 */
+  transition: all var(--transition-duration-light-pulse) ease;
+  /* 添加所有属性的过渡 */
+}
+
+/* 欢迎消息能力“芯片”悬停时的样式 */
+.chat-box .message.system-message-initial.lumina-panel .capabilities .capability:hover {
+  background-color: rgba(var(--current-accent-light-rgb), 0.12);
+  /* 背景色加深 */
+  color: var(--current-text-primary);
+  /* 文本颜色变为主要文本色 */
+  transform: translateY(-1px);
+  /* 向上轻微抬升 */
+  box-shadow: 0 2px 5px rgba(var(--current-accent-light-rgb), 0.1);
+  /* 添加柔和阴影 */
+}
+
+/* 欢迎消息能力“芯片”内的图标样式 */
+.chat-box .message.system-message-initial.lumina-panel .capabilities .capability i {
+  color: var(--current-accent-light);
+  /* 图标颜色使用光强调色 */
+  margin-right: calc(var(--spacing-unit) * 0.75);
+  /* 图标与文本间距 */
+}
+
+/* 欢迎消息中的快捷操作区标题样式 */
+.chat-box .message.system-message-initial.lumina-panel .quick-actions p {
+  font-weight: 500;
+  /* 字体加粗 */
+  margin-bottom: calc(var(--spacing-unit) * 1.2);
+  /* 底部外边距 */
+  color: var(--current-text-primary);
+  /* 文本颜色使用主要文本色 */
+}
+
+/* 欢迎消息中的快捷操作列表容器样式 */
+.chat-box .message.system-message-initial.lumina-panel .quick-actions ul {
+  list-style: none;
+  /* 移除列表默认标记 */
+  padding: 0;
+  /* 移除默认内边距 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-wrap: wrap;
+  /* 允许换行 */
+  gap: calc(var(--spacing-unit) * 1);
+  /* 项目之间的间距 */
+}
+
+/* 欢迎消息中的快捷操作按钮样式 (应用通用lumina-button并调整大小) */
+.chat-box .message.system-message-initial.lumina-panel .quick-actions ul li a.quick-action-btn.lumina-button {
+  padding: calc(var(--spacing-unit) * 0.8) calc(var(--spacing-unit) * 1.5);
+  /* 调整内边距 */
+  font-size: calc(var(--base-font-size) * 0.85);
+  /* 调整字体大小 */
+}
+
+/* 打字指示器（Typing Indicator）的容器样式 */
+.chat-box .typing-indicator {
+  display: flex;
+  /* 使用Flexbox布局 */
+  align-items: flex-start;
+  /* 内容顶部对齐 */
+}
+
+/* 打字指示器消息气泡的样式 */
+.chat-box .typing-indicator .message-bubble {
+  background-color: var(--current-panel-bg);
+  /* 背景色使用当前面板背景色 */
+  padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 1.8);
+  /* 调整内边距 */
+}
+
+/* 打字指示器中的点容器样式 */
+.chat-box .typing-indicator .message-bubble .typing-dots {
+  display: inline-flex;
+  /* 内联Flexbox布局 */
+  align-items: center;
+  /* 垂直居中 */
+}
+
+/* 打字指示器中的点样式 */
+.chat-box .typing-indicator .message-bubble .typing-dots .typing-dot {
+  background-color: var(--current-accent-ink);
+  /* 背景色使用墨迹强调色 */
+  width: 7px;
+  height: 7px;
+  /* 固定宽高 */
+  border-radius: 50%;
+  /* 圆形 */
+  margin: 0 3px;
+  /* 水平间距 */
+  animation: luminaTypingDotBounce 1.3s infinite ease-in-out;
+  /* 应用跳动动画 */
+}
+
+/* 打字指示器第二个点的动画延迟 */
+.chat-box .typing-indicator .message-bubble .typing-dots .typing-dot:nth-child(2) {
+  animation-delay: 0.22s;
+}
+
+/* 打字指示器第三个点的动画延迟 */
+.chat-box .typing-indicator .message-bubble .typing-dots .typing-dot:nth-child(3) {
+  animation-delay: 0.44s;
+}
+
+/* 复制按钮样式 */
+.message-bubble .copy-llm-response-btn {
+  position: absolute;
+  /* 绝对定位 */
+  top: calc(var(--spacing-unit) * 1);
+  right: calc(var(--spacing-unit) * 1);
+  /* 定位在气泡右上角 */
+  opacity: 0;
+  visibility: hidden;
+  /* 初始状态隐藏 */
+  /* 添加透明度和可见性过渡 */
+  transition: opacity var(--transition-duration-light-pulse) ease-in-out,
+    visibility 0s var(--transition-duration-light-pulse) ease-in-out,
+    background-color var(--transition-duration-light-pulse) ease-in-out;
+  z-index: 10;
+  /* 确保在气泡内容之上 */
+  cursor: pointer;
+  /* 鼠标悬停显示手型光标 */
+}
+
+/* 消息气泡悬停时显示复制按钮 */
+.message-bubble:hover .copy-llm-response-btn {
+  opacity: 1;
+  visibility: visible;
+  /* 悬停时显示 */
+  transition-delay: 0s, 0s;
+  /* 过渡延迟设为0，立即显示 */
+}
+
+/* 复制按钮悬停状态的样式 */
+.message-bubble .copy-llm-response-btn:hover {
+  background-color: rgba(var(--current-text-primary-rgb), 0.1);
+  /* 添加半透明背景 */
+  color: var(--current-text-primary);
+  /* 文本颜色变为主要文本色 */
+}
+
+/* 确保复制按钮内的图标不影响鼠标事件 */
+.message-bubble .copy-llm-response-btn i {
+  pointer-events: none;
+}
+
+
+/* ==========================================================================
+   [ 12. Input Area ]
+   定义用户输入区域的样式和布局。
+   ========================================================================== */
+
+/* 用户输入区域容器，应用 Lumina 面板样式 */
+.input-area.lumina-panel {
+  border-radius: var(--border-radius-soft);
+  /* 应用柔和圆角 */
+  padding: calc(var(--spacing-unit) * 1.5);
+  /* 内边距 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  align-items: flex-end;
+  /* 子元素底部对齐 */
+  flex-shrink: 0;
+  /* 防止输入区域被压缩 */
+  z-index: 5;
+  /* 堆叠顺序 */
+  border-top-width: var(--lumina-line-weight-thin);
+  /* 顶部边框宽度 */
+  position: relative;
+  /* 开启定位上下文，用于文件预览区 */
+}
+
+/* 输入区域左侧操作按钮 (附件、语音等) 样式 */
+.input-area.lumina-panel .input-action-btn {
+  margin-right: calc(var(--spacing-unit) * 1);
+  /* 右侧外边距 */
+  align-self: flex-end;
+  /* 在Flex容器中底部对齐 */
+  margin-bottom: calc(var(--spacing-unit) * 0.35);
+  /* 底部微调，使其与输入框底部对齐 */
+}
+
+/* 输入区域输入框和内部覆盖元素的包装器 */
+.input-area.lumina-panel .input-wrapper {
+  flex-grow: 1;
+  /* 填充剩余水平空间 */
+  position: relative;
+  /* 开启定位上下文 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 内部元素垂直排列 */
+}
+
+/* 发送按钮样式 (应用 Lumina 主按钮样式并调整) */
+.input-area.lumina-panel .send-button.lumina-button-primary {
+  width: 56px;
+  height: 56px;
+  /* 固定宽高 */
+  align-self: flex-end;
+  /* 在Flex容器中底部对齐 */
+  margin-left: var(--spacing-unit);
+  /* 左侧外边距 */
+  border-radius: 50%;
+  /* 圆形 */
+  padding: 0;
+  /* 移除内边距 */
+}
+
+/* 发送按钮内的SVG图标样式 */
+.input-area.lumina-panel .send-button.lumina-button-primary .send-icon {
+  width: 26px;
+  height: 26px;
+  /* 图标宽高 */
+  fill: var(--current-bg);
+  /* 填充颜色使用当前背景色（与按钮墨迹强调色背景形成对比） */
+}
+
+/* 发送按钮内的加载图标样式 */
+.input-area.lumina-panel .send-button.lumina-button-primary .send-loading-icon {
+  font-size: 22px;
+  /* 图标大小 */
+  color: var(--current-bg);
+  /* 颜色使用当前背景色 */
+}
+
+/* 发送中状态下按钮应用的动画 */
+.input-area.lumina-panel .send-button.lumina-button-primary.processing-active {
+  animation: luminaSendButtonProcessing 1.8s infinite ease-in-out;
+  /* 应用处理中动画 */
+}
+
+/* 用户输入框 (input, textarea, select) 的通用样式 */
+input,
+textarea,
+select {
+  font-family: var(--font-family-body);
+  /* 应用主体文本字体 */
+  background-color: rgba(var(--current-bg-rgb), 0.5);
+  /* 半透明背景色 */
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 细边框 */
+  color: var(--current-text-primary);
+  /* 文本颜色使用主要文本色 */
+  padding: calc(var(--spacing-unit) * 1.35) calc(var(--spacing-unit) * 1.5);
+  /* 内边距 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+  /* 添加边框颜色和阴影过渡 */
+  transition: border-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+    box-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  width: 100%;
+  /* 宽度占满父容器 */
+}
+
+/* 输入框聚焦状态的样式 */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  /* 移除默认聚焦轮廓 */
+  border-color: var(--current-accent-light);
+  /* 边框颜色变为光强调色 */
+  /* 添加辉光阴影 */
+  box-shadow: 0 0 0 var(--lumina-line-weight-bold) rgba(var(--current-accent-light-rgb), 0.3),
+    0 0 8px rgba(var(--current-accent-light-rgb), 0.2);
+}
+
+/* 用户文本输入框 (textarea) 的特定样式 */
+textarea#user-input {
+  border-width: var(--lumina-line-weight-medium);
+  /* 使用中等粗细边框 */
+  background-color: transparent;
+  /* 默认背景透明 */
+  min-height: 56px;
+  /* 最小高度，与发送按钮高度对齐 */
+  max-height: 180px;
+  /* 最大高度，防止输入框过高 */
+  padding-right: calc(var(--spacing-unit) * 9);
+  /* 右侧内边距，为覆盖的按钮和计数器留出空间 */
+  line-height: 1.6;
+  /* 行高 */
+  font-size: var(--base-font-size);
+  /* 字体大小 */
+  resize: none;
+  /* 禁止手动调整大小 */
+}
+
+/* 用户文本输入框聚焦时的背景色 */
+textarea#user-input:focus {
+  background-color: rgba(var(--current-panel-bg-rgb), 0.3);
+  /* 聚焦时背景变为半透明面板背景色 */
+}
+
+/* 输入框内覆盖的按钮和计数器区域 */
+.input-area.lumina-panel .input-actions-overlay {
+  position: absolute;
+  /* 绝对定位 */
+  right: calc(var(--spacing-unit) * 1.25);
+  bottom: calc(var(--spacing-unit) * 1);
+  /* 定位在输入框的右下角 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  align-items: center;
+  /* 垂直居中 */
+  gap: calc(var(--spacing-unit) * 0.75);
+  /* 子元素之间的间距 */
+}
+
+/* 输入框内覆盖的操作按钮 (麦克风等) 样式 */
+.input-area.lumina-panel .input-actions-overlay .overlay-btn {
+  padding: calc(var(--spacing-unit) * 0.6);
+  /* 内边距 */
+  font-size: calc(var(--base-font-size) * 1.05);
+  /* 图标大小 */
+  color: var(--current-text-secondary);
+  /* 默认颜色使用辅助文本色 */
+  opacity: 0.65;
+  /* 降低透明度 */
+  background-color: transparent;
+  /* 背景透明 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+}
+
+/* 输入框内覆盖的操作按钮悬停时的样式 */
+.input-area.lumina-panel .input-actions-overlay .overlay-btn:hover {
+  opacity: 1;
+  /* 完全不透明 */
+  color: var(--current-accent-light);
+  /* 颜色变为光强调色 */
+  background-color: rgba(var(--current-accent-light-rgb), 0.08);
+  /* 添加半透明背景 */
+}
+
+/* 字符计数器样式 */
+.input-area.lumina-panel .input-actions-overlay .char-counter {
+  font-size: 0.78em;
+  /* 字体大小 */
+  color: var(--current-text-secondary);
+  /* 默认颜色使用辅助文本色 */
+  opacity: 0.55;
+  /* 降低透明度 */
+  margin-right: var(--spacing-unit);
+  /* 右侧外边距 */
+}
+
+/* 字符计数器警告状态样式 */
+.input-area.lumina-panel .input-actions-overlay .char-counter.warn {
+  color: var(--current-accent-ink);
+  /* 颜色使用墨迹强调色 */
+  opacity: 0.8;
+  /* 提高透明度 */
+}
+
+/* 字符计数器错误状态样式 */
+.input-area.lumina-panel .input-actions-overlay .char-counter.error {
+  color: var(--lumina-error-color);
+  /* 颜色使用错误状态色 */
+  opacity: 1;
+  /* 完全不透明 */
+  font-weight: 500;
+  /* 字体加粗 */
+}
+
+
+/* ==========================================================================
+   [ 13. File Preview ]
+   文件预览区域样式。
+   ========================================================================== */
+
+/* 文件预览区域容器，应用 Lumina 面板样式 */
+.file-preview.lumina-panel {
+  position: absolute;
+  /* 绝对定位，相对于父元素 .chat-area-content */
+  bottom: calc(100% + var(--spacing-unit) * 1.25);
+  /* 位于父元素底部上方，留出间距 */
+  left: 0;
+  right: 0;
+  /* 左右拉伸填满父容器宽度 */
+  max-height: 160px;
+  /* 最大高度 */
+  display: none;
+  /* 初始状态隐藏 */
+  flex-direction: column;
+  /* 内部元素垂直排列 */
+  z-index: var(--z-index-file-preview);
+  /* 堆叠顺序 */
+  overflow: hidden;
+  /* 隐藏溢出内容 */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  /* 底部直角 */
+  border-bottom-width: 0;
+  /* 移除底部边框 */
+}
+
+/* 文件预览区域可见状态 */
+.file-preview.lumina-panel.active {
+  display: flex;
+  /* 可见时使用Flexbox布局显示 */
+}
+
+/* 文件预览头部样式 */
+.file-preview.lumina-panel .file-preview-header {
+  display: flex;
+  /* 使用Flexbox布局 */
+  justify-content: space-between;
+  /* 标题与关闭按钮分散对齐 */
+  align-items: center;
+  /* 垂直居中 */
+  padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 1.5);
+  /* 内边距 */
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 底部细边框 */
+  flex-shrink: 0;
+  /* 防止头部被压缩 */
+}
+
+/* 文件预览头部标题样式 */
+.file-preview.lumina-panel .file-preview-header h3 {
+  font-size: 0.95em;
+  /* 字体大小 */
+  margin: 0;
+  /* 移除默认外边距 */
+  font-family: var(--font-family-title);
+  /* 应用标题字体 */
+  color: var(--current-text-primary);
+  /* 颜色使用主要文本色 */
+  font-weight: 500;
+  /* 字体粗细 */
+}
+
+/* 文件预览头部标题内的图标样式 */
+.file-preview.lumina-panel .file-preview-header h3 i {
+  color: var(--current-accent-light);
+  /* 颜色使用光强调色 */
+  margin-right: var(--spacing-unit);
+  /* 图标与文本间距 */
+}
+
+/* 文件预览头部关闭按钮（应用通用icon-btn样式） */
+/* 此规则集原为空，已移除。特定样式由 .icon-btn 提供。 */
+
+
+/* 文件预览内容区域（文件列表）样式 */
+.file-preview.lumina-panel .file-preview-content {
+  flex-grow: 1;
+  /* 填充剩余垂直空间 */
+  overflow-y: auto;
+  /* 垂直方向允许滚动 */
+  padding: calc(var(--spacing-unit) * 1.25);
+  /* 内边距 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-wrap: wrap;
+  /* 允许换行 */
+  gap: calc(var(--spacing-unit) * 1);
+  /* 文件项之间的间距 */
+}
+
+/* 单个文件项的样式 */
+.file-preview.lumina-panel .file-item {
+  background-color: rgba(var(--current-bg-rgb), 0.5);
+  /* 半透明背景色 */
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 细边框 */
+  border-radius: 18px;
+  /* 应用较大圆角，形成芯片形状 */
+  padding: calc(var(--spacing-unit) * 0.6) calc(var(--spacing-unit) * 1.2);
+  /* 内边距 */
+  display: inline-flex;
+  /* 内联Flexbox布局 */
+  align-items: center;
+  /* 垂直居中 */
+  font-size: 0.85em;
+  /* 字体大小 */
+  color: var(--current-text-secondary);
+  /* 文本颜色使用辅助文本色 */
+  transition: all var(--transition-duration-light-pulse) ease;
+  /* 添加所有属性的过渡 */
+}
+
+/* 文件项悬停状态的样式 */
+.file-preview.lumina-panel .file-item:hover {
+  border-color: var(--current-accent-light);
+  /* 边框颜色变为光强调色 */
+  color: var(--current-text-primary);
+  /* 文本颜色变为主要文本色 */
+  box-shadow: 0 1px 4px rgba(var(--current-accent-light-rgb), 0.1);
+  /* 添加柔和阴影 */
+}
+
+/* 文件项图标的样式 */
+.file-preview.lumina-panel .file-item .file-icon {
+  color: var(--current-accent-light);
+  /* 颜色使用光强调色 */
+  margin-right: calc(var(--spacing-unit) * 0.75);
+  /* 图标与文本间距 */
+  font-size: 1.1em;
+  /* 图标大小 */
+}
+
+/* 文件名称文本样式 */
+.file-preview.lumina-panel .file-item .file-name {
+  max-width: 160px;
+  /* 最大宽度限制 */
+  white-space: nowrap;
+  /* 防止换行 */
+  overflow: hidden;
+  /* 隐藏溢出文本 */
+  text-overflow: ellipsis;
+  /* 溢出文本显示省略号 */
+}
+
+/* 移除文件按钮样式 */
+.file-preview.lumina-panel .file-item .file-remove {
+  font-size: 1em;
+  /* 字体大小 */
+  color: var(--lumina-error-color);
+  /* 颜色使用错误状态色 */
+  margin-left: calc(var(--spacing-unit) * 0.8);
+  /* 左侧外边距 */
+  opacity: 0.7;
+  /* 降低透明度 */
+  padding: 2px;
+  /* 内边距，增加点击区域 */
+}
+
+/* 移除文件按钮悬停或聚焦时的样式 */
+.file-preview.lumina-panel .file-item .file-remove:hover,
+.file-preview.lumina-panel .file-item .file-remove:focus {
+  opacity: 1;
+  /* 完全不透明 */
+  background-color: rgba(var(--lumina-error-color-rgb), 0.1);
+  /* 添加半透明背景 */
+}
+
+
+/* ==========================================================================
+   [ 14. Modal (Settings) ]
+   设置模态框的整体结构和基础样式。
+   ========================================================================== */
+
+/* 模态框背景遮罩层 */
+.modal {
+  position: fixed;
+  /* 固定定位，覆盖整个视口 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* 占满整个视口 */
+  background-color: rgba(var(--lumina-bg-dark, 22, 24, 29), 0.65);
+  /* 半透明深色背景 */
+  backdrop-filter: blur(10px) brightness(0.8);
+  /* 毛玻璃效果，模糊背景并降低亮度 */
+  -webkit-backdrop-filter: blur(10px) brightness(0.8);
+  /* Webkit内核浏览器兼容 */
+  display: none;
+  /* 初始状态隐藏 */
+  align-items: center;
+  /* 垂直居中 */
+  justify-content: center;
+  /* 水平居中 */
+  z-index: var(--z-index-modal);
+  /* 堆叠顺序 */
+}
+
+/* 模态框内容容器，应用 Lumina 面板样式 */
+.modal .modal-content.lumina-panel {
+  max-width: 680px;
+  /* 最大宽度 */
+  width: 92%;
+  /* 默认宽度 */
+  max-height: 85vh;
+  /* 最大高度，防止内容过多溢出视口 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 内部元素垂直排列 */
+  overflow: hidden;
+  /* 隐藏溢出内容 */
+  /* 添加阴影和边框效果 */
+  box-shadow: 0 10px 40px rgba(var(--current-text-primary-rgb), 0.1),
+    0 0 0 1px rgba(var(--current-panel-border-rgb), 0.5);
+}
+
+/* 模态框头部样式 */
+.modal .modal-content.lumina-panel .modal-header {
+  display: flex;
+  /* 使用Flexbox布局 */
+  justify-content: space-between;
+  /* 标题与关闭按钮分散对齐 */
+  align-items: center;
+  /* 垂直居中 */
+  padding: calc(var(--spacing-unit) * 1.8) calc(var(--spacing-unit) * 2.5);
+  /* 内边距 */
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 底部细边框 */
+  flex-shrink: 0;
+  /* 防止头部被压缩 */
+}
+
+/* 模态框头部标题样式 */
+.modal .modal-content.lumina-panel .modal-header h2 {
+  font-size: calc(var(--base-font-size) * 1.35);
+  /* 字体大小 */
+  margin: 0;
+  /* 移除默认外边距 */
+  font-weight: 500;
+  /* 字体粗细 */
+  color: var(--current-text-primary);
+  /* 颜色使用主要文本色 */
+}
+
+/* 模态框头部标题内的图标样式 */
+.modal .modal-content.lumina-panel .modal-header h2 i {
+  color: var(--current-accent-light);
+  /* 颜色使用光强调色 */
+  margin-right: calc(var(--spacing-unit) * 1.2);
+  /* 图标与文本间距 */
+}
+
+/* 模态框头部关闭按钮（应用通用icon-btn样式） */
+/* 此规则集原为空，已移除。特定样式由 .icon-btn 提供。 */
+
+
+/* 模态框主体内容区域样式 */
+.modal .modal-content.lumina-panel .modal-body {
+  padding: calc(var(--spacing-unit) * 2.5);
+  /* 内边距 */
+  overflow-y: auto;
+  /* 垂直方向允许滚动 */
+  flex-grow: 1;
+  /* 填充剩余垂直空间 */
+}
+
+/* 设置分组容器样式 */
+.modal .modal-content.lumina-panel .modal-body .setting-group {
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  /* 底部外边距 */
+}
+
+/* 最后一个设置分组移除底部外边距 */
+.modal .modal-content.lumina-panel .modal-body .setting-group:last-child {
+  margin-bottom: 0;
+}
+
+/* 设置分组标题样式 */
+.modal .modal-content.lumina-panel .modal-body .setting-group h3 {
+  font-size: calc(var(--base-font-size) * 1.1);
+  /* 字体大小 */
+  border-bottom: var(--lumina-line-weight-thin) solid rgba(var(--current-panel-border-rgb), 0.7);
+  /* 底部细边框 */
+  padding-bottom: calc(var(--spacing-unit) * 1.2);
+  /* 底部内边距 */
+  margin-bottom: calc(var(--spacing-unit) * 1.8);
+  /* 底部外边距 */
+  color: var(--current-text-primary);
+  /* 颜色使用主要文本色 */
+  font-weight: 500;
+  /* 字体粗细 */
+}
+
+/* 设置分组标题内的图标样式 */
+.modal .modal-content.lumina-panel .modal-body .setting-group h3 i {
+  color: var(--current-accent-ink);
+  /* 颜色使用墨迹强调色 */
+  margin-right: var(--spacing-unit);
+  /* 图标与文本间距 */
+}
+
+/* 单个设置项容器样式 */
+.modal .modal-content.lumina-panel .modal-body .setting-item {
+  display: flex;
+  /* 使用Flexbox布局 */
+  justify-content: space-between;
+  /* 标签与控件分散对齐 */
+  align-items: center;
+  /* 垂直居中 */
+  margin-bottom: calc(var(--spacing-unit) * 1.8);
+  /* 底部外边距 */
+  font-size: calc(var(--base-font-size) * 0.92);
+  /* 字体大小 */
+  color: var(--current-text-secondary);
+  /* 默认颜色使用辅助文本色 */
+}
+
+/* 单个设置项中标签 (label) 的样式 */
+.modal .modal-content.lumina-panel .modal-body .setting-item label:first-child {
+  flex-basis: 55%;
+  /* 占据约55%的宽度 */
+  margin-right: var(--spacing-unit);
+  /* 右侧外边距 */
+  color: var(--current-text-primary);
+  /* 颜色使用主要文本色 */
+}
+
+
+/* ==========================================================================
+   [ 15. Settings Modal Controls ]
+   设置模态框内表单控件（下拉框、范围滑块、开关）的样式。
+   ========================================================================== */
+
+/* 设置项中的控件通用容器样式 */
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-select,
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-range-container,
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-switch-container {
+  flex-grow: 1;
+  /* 填充剩余水平空间 */
+  max-width: 240px;
+  /* 最大宽度限制 */
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  /* 细边框 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+  padding: calc(var(--spacing-unit) * 0.9);
+  /* 内边距 */
+  background-color: rgba(var(--current-bg-rgb), 0.4);
+  /* 半透明背景色 */
+}
+
+/* 开关控件容器的特殊样式 (覆盖通用控件容器样式) */
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-switch-container {
+  border: none;
+  /* 无边框 */
+  padding: 0;
+  /* 无内边距 */
+  background-color: transparent;
+  /* 背景透明 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  justify-content: flex-end;
+  /* 子元素靠右对齐 */
+}
+
+/* 范围滑块容器样式 */
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-range-container {
+  display: flex;
+  /* 使用Flexbox布局 */
+  align-items: center;
+  /* 垂直居中 */
+  padding-right: 0;
+  /* 右侧内边距为0，因为值显示元素单独处理 */
+}
+
+/* 范围滑块 (input type=range) 样式 */
+.modal .modal-content.lumina-panel .modal-body .setting-item input[type=range] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* 移除原生样式 */
+  width: 100%;
+  height: 6px;
+  /* 滑轨高度 */
+  background: rgba(var(--current-panel-border-rgb), 0.5);
+  /* 滑轨背景色 */
+  border-radius: 3px;
+  /* 滑轨圆角 */
+  outline: none;
+  /* 移除轮廓 */
+  border: none;
+  /* 移除边框 */
+}
+
+/* 范围滑块 thumb (滑块) 在 Webkit 内核浏览器中的样式 */
+.lumina-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  /* 移除原生样式 */
+  width: 18px;
+  height: 18px;
+  /* 滑块宽高 */
+  background: var(--current-accent-light);
+  /* 背景色使用光强调色 */
+  border-radius: 50%;
+  /* 圆形 */
+  cursor: pointer;
+  /* 鼠标悬停显示手型光标 */
+  box-shadow: 0 0 8px rgba(var(--current-accent-light-rgb), 0.4);
+  /* 添加辉光阴影 */
+  border: 2px solid var(--current-panel-bg);
+  /* 添加白色（面板背景色）边框 */
+  transition: transform var(--transition-duration-light-pulse) ease;
+  /* 添加变形过渡 */
+  margin-top: -6px; /* 调整位置使滑块居中于滑轨 */
+}
+
+/* 范围滑块 thumb (滑块) 在 Webkit 内核浏览器中悬停时的样式 */
+.lumina-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  /* 略微放大 */
+}
+
+/* 范围滑块 thumb (滑块) 在 Firefox 浏览器中的样式 */
+.lumina-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  /* 滑块宽高 */
+  background: var(--current-accent-light);
+  /* 背景色使用光强调色 */
+  border-radius: 50%;
+  /* 圆形 */
+  cursor: pointer;
+  /* 鼠标悬停显示手型光标 */
+  border: none;
+  /* 移除默认边框 */
+  box-shadow: 0 0 8px rgba(var(--current-accent-light-rgb), 0.4);
+  /* 添加辉光阴影 */
+  border: 2px solid var(--current-panel-bg);
+  /* 添加白色（面板背景色）边框 */
+}
+
+/* 范围滑块 thumb (滑块) 在 Firefox 浏览器中悬停时的样式 */
+.lumina-range::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  /* 略微放大 */
+}
+
+
+/* 开关容器样式 */
+.lumina-switch {
+  position: relative;
+  /* 开启定位上下文 */
+  display: inline-block;
+  /* 内联块级显示 */
+  width: 48px;
+  height: 24px;
+  /* 开关整体宽高 */
+}
+
+/* 隐藏原生的 checkbox 输入框 */
+.lumina-switch input {
+  display: none;
+}
+
+/* 开关滑轨 (slider) 样式 */
+.lumina-switch .slider {
+  position: absolute;
+  /* 绝对定位 */
+  cursor: pointer;
+  /* 鼠标悬停显示手型光标 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 覆盖整个父容器 */
+  background-color: rgba(var(--current-panel-border-rgb), 0.6);
+  /* 默认背景色使用半透明面板边框颜色 */
+  transition: background-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  /* 添加背景色过渡 */
+}
+
+/* 圆形滑轨样式 */
+.lumina-switch .slider.round {
+  border-radius: 24px;
+  /* 圆角使其呈药丸形状 */
+}
+
+/* 圆形滑轨的滑块也应用圆形 */
+.lumina-switch .slider.round:before {
+  border-radius: 50%;
+}
+
+/* 开关滑块 (thumb) 伪元素样式 */
+.lumina-switch .slider:before {
+  content: "";
+  /* 生成伪元素 */
+  position: absolute;
+  /* 绝对定位 */
+  height: 18px;
+  width: 18px;
+  /* 滑块宽高 */
+  left: 3px;
+  bottom: 3px;
+  /* 定位在左下角，与滑轨边缘保持间距 */
+  background-color: var(--current-bg);
+  /* 背景色使用当前背景色 */
+  box-shadow: 0 1px 2px rgba(var(--current-text-primary-rgb), 0.2);
+  /* 添加柔和阴影 */
+  transition: transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  /* 添加变形过渡 */
+}
+
+/* 开关打开 (checked) 状态下滑轨的背景颜色 */
+.lumina-switch input:checked+.slider {
+  background-color: var(--current-accent-light);
+  /* 背景色变为光强调色 */
+}
+
+/* 开关打开 (checked) 状态下滑块的位置 */
+.lumina-switch input:checked+.slider:before {
+  transform: translateX(24px);
+  /* 水平位移24px，移动到右侧 */
+}
+
+/* 开关聚焦状态的轮廓 */
+.lumina-switch input:focus+.slider {
+  box-shadow: 0 0 0 2px rgba(var(--current-accent-light-rgb), 0.3);
+  /* 添加聚焦轮廓 */
+}
+
+
+/* ==========================================================================
+   [ 16. Toast Notifications ]
+   显示和管理Toast通知的样式。
+   ========================================================================== */
+
+/* Toast通知容器，管理Toast的布局和位置 */
+.toast-container {
+  position: fixed;
+  /* 固定定位 */
+  top: calc(var(--header-height) + var(--spacing-unit) * 1.5);
+  right: calc(var(--spacing-unit) * 1.5);
+  /* 定位在右上角，位于头部下方 */
+  z-index: var(--z-index-toast);
+  /* 堆叠顺序，高于模态框 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* Toast垂直堆叠 */
+  gap: calc(var(--spacing-unit) * 1.2);
+  /* Toast之间的间距 */
+  max-width: 380px;
+  /* 最大宽度 */
+}
+
+/* 单条Toast通知面板样式，应用 Lumina 面板基础样式并调整 */
+.toast.lumina-panel {
+  padding: calc(var(--spacing-unit) * 1.4) calc(var(--spacing-unit) * 1.8);
+  /* 内边距 */
+  border-left-width: var(--lumina-line-weight-bold);
+  /* 左侧使用粗边框作为状态指示条 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  align-items: flex-start;
+  /* 内容顶部对齐 */
+  gap: calc(var(--spacing-unit) * 1.2);
+  /* 图标与文本间距 */
+  animation-duration: var(--transition-duration-ink-subtle) !important;
+  /* 覆盖可能的默认动画时长 */
+  border-radius: var(--border-radius-slight);
+  /* 应用小圆角 */
+  background-image: none;
+  /* 移除面板背景纹理 */
+  position: relative;
+  /* 开启定位上下文，用于关闭按钮 */
+  /* 继承了面板的背景、边框、阴影、backdrop-filter等基础样式 */
+}
+
+/* Toast 图标样式 */
+.toast.lumina-panel .toast-icon {
+  font-size: calc(var(--base-font-size) * 1.35);
+  /* 图标大小 */
+  margin-top: 1px;
+  /* 微调位置 */
+  flex-shrink: 0;
+  /* 防止图标被压缩 */
+}
+
+/* Toast 消息文本样式 */
+.toast.lumina-panel .toast-message {
+  flex-grow: 1;
+  /* 填充剩余空间 */
+  font-size: calc(var(--base-font-size) * 0.92);
+  /* 字体大小 */
+  line-height: 1.5;
+  /* 行高 */
+  color: var(--current-text-primary);
+  /* 文本颜色使用主要文本色 */
+  padding-right: calc(var(--spacing-unit) * 3);
+  /* 右侧内边距，为关闭按钮留出空间 */
+}
+
+/* Toast 关闭按钮样式 */
+.toast.lumina-panel .toast-close {
+  position: absolute;
+  /* 绝对定位 */
+  top: calc(var(--spacing-unit) * 0.75);
+  right: calc(var(--spacing-unit) * 0.75);
+  /* 定位在右上角 */
+  padding: calc(var(--spacing-unit) * 0.5);
+  /* 内边距，增加点击区域 */
+  font-size: 0.9em;
+  /* 字体大小 */
+  color: var(--current-text-secondary);
+  /* 默认颜色使用辅助文本色 */
+  background: transparent;
+  /* 背景透明 */
+  border: none;
+  /* 无边框 */
+  line-height: 1;
+  /* 行高 */
+}
+
+/* Toast 关闭按钮悬停状态的样式 */
+.toast.lumina-panel .toast-close:hover {
+  color: var(--current-text-primary);
+  /* 颜色变为主要文本色 */
+  background-color: rgba(var(--current-text-primary-rgb), 0.1);
+  /* 添加半透明背景 */
+}
+
+/* Toast 不同状态的颜色标记线和图标颜色 */
+.toast.lumina-panel.toast-info {
+  border-left-color: var(--current-accent-light);
+  /* 信息状态：左侧边框颜色为光强调色 */
+}
+
+.toast.lumina-panel.toast-info .toast-icon {
+  color: var(--current-accent-light);
+  /* 信息状态：图标颜色为光强调色 */
+}
+
+.toast.lumina-panel.toast-success {
+  border-left-color: var(--lumina-success-color);
+  /* 成功状态：左侧边框颜色为成功色 */
+}
+
+.toast.lumina-panel.toast-success .toast-icon {
+  color: var(--lumina-success-color);
+  /* 成功状态：图标颜色为成功色 */
+}
+
+.toast.lumina-panel.toast-warning {
+  border-left-color: var(--current-accent-ink);
+  /* 警告状态：左侧边框颜色为墨迹强调色 */
+}
+
+.toast.lumina-panel.toast-warning .toast-icon {
+  color: var(--current-accent-ink);
+  /* 警告状态：图标颜色为墨迹强调色 */
+}
+
+.toast.lumina-panel.toast-error {
+  border-left-color: var(--lumina-error-color);
+  /* 错误状态：左侧边框颜色为错误色 */
+}
+
+.toast.lumina-panel.toast-error .toast-icon {
+  color: var(--lumina-error-color);
+  /* 错误状态：图标颜色为错误色 */
+}
+
+
+/* ==========================================================================
+   [ 17. Loader ]
+   加载动画的样式。
+   ========================================================================== */
+
+/* 加载遮罩层容器 */
+.loader-container {
+  background-color: var(--current-bg);
+  /* 背景色使用当前背景色 */
+  opacity: 1;
+  /* 初始完全不透明 */
+  transition: opacity var(--transition-duration-ink-flow) var(--transition-timing-function-lumina);
+  /* 添加透明度过渡，用于隐藏加载器 */
+  position: fixed;
+  /* 固定定位，覆盖整个视口 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* 占满整个视口 */
+  display: flex;
+  /* 使用Flexbox布局 */
+  flex-direction: column;
+  /* 内部元素垂直排列 */
+  align-items: center;
+  justify-content: center;
+  /* 水平垂直居中 */
+  z-index: var(--z-index-loader);
+  /* 堆叠顺序最高 */
+}
+
+/* Loader隐藏状态，透明度为0且不响应鼠标事件 */
+.loader-container.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Lumina Loader Core (旋转光环与脉动核心的容器) */
+.lumina-loader-core {
+  width: 100px;
+  height: 100px;
+  /* 固定宽高 */
+  position: relative;
+  /* 开启定位上下文 */
+  margin-bottom: calc(var(--spacing-unit) * 3.5);
+  /* 底部外边距 */
+}
+
+/* 光环伪元素 (用于创建旋转圆环) */
+.lumina-loader-core::before,
+.lumina-loader-core::after {
+  content: '';
+  /* 生成伪元素 */
+  position: absolute;
+  /* 绝对定位 */
+  border-radius: 50%;
+  /* 圆形 */
+  border-style: solid;
+  /* 边框样式 */
+  border-color: transparent;
+  /* 默认边框颜色透明 */
+  animation: luminaLoaderSpin 2.5s linear infinite;
+  /* 应用旋转动画 */
+}
+
+/* 外环伪元素样式 */
+.lumina-loader-core::before {
+  width: 100%;
+  height: 100%;
+  /* 占满父容器 */
+  border-width: var(--lumina-line-weight-bold);
+  /* 边框使用粗线 */
+  border-top-color: var(--current-accent-light);
+  border-left-color: var(--current-accent-light);
+  /* 顶部和左侧边框颜色使用光强调色，形成旋转的光环感 */
+  opacity: 0.8;
+  /* 降低透明度 */
+}
+
+/* 内环伪元素样式 */
+.lumina-loader-core::after {
+  width: 70%;
+  height: 70%;
+  /* 相对于父容器的宽高 */
+  top: 15%;
+  left: 15%;
+  /* 居中定位 */
+  border-width: var(--lumina-line-weight-medium);
+  /* 边框使用中等粗细 */
+  border-bottom-color: var(--current-accent-ink);
+  border-right-color: var(--current-accent-ink);
+  /* 底部和右侧边框颜色使用墨迹强调色，与外环颜色不同 */
+  animation-direction: reverse;
+  /* 反向旋转 */
+  animation-duration: 2s;
+  /* 动画时长略短 */
+  opacity: 0.7;
+  /* 降低透明度 */
+}
+
+/* 中心脉动光点样式 */
+.lumina-loader-center-pulse {
+  position: absolute;
+  /* 绝对定位 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* 精确居中 */
+  width: 12px;
+  height: 12px;
+  /* 固定宽高 */
+  background-color: var(--current-accent-light);
+  /* 背景色使用光强调色 */
+  border-radius: 50%;
+  /* 圆形 */
+  box-shadow: 0 0 15px 3px var(--current-glow);
+  /* 添加辉光效果 */
+  animation: luminaLoaderPulse 1.5s infinite ease-in-out;
+  /* 应用脉动动画 */
+}
+
+/* Fatal Error Loader 状态下的样式覆盖 */
+.loader-container.loader-fatal-error .lumina-loader-core::before {
+  border-top-color: var(--lumina-error-color);
+  border-left-color: var(--lumina-error-color);
+  /* 边框颜色变为错误色 */
+  animation: luminaLoaderSpin 3s linear infinite, luminaErrorPulseBorder 1.5s infinite ease-in-out;
+  /* 添加错误状态边框脉动动画 */
+}
+
+.loader-container.loader-fatal-error .lumina-loader-core::after {
+  border-bottom-color: var(--lumina-error-color);
+  border-right-color: var(--lumina-error-color);
+  /* 边框颜色变为错误色 */
+  opacity: 0.5;
+  /* 降低透明度 */
+}
+
+.loader-container.loader-fatal-error .lumina-loader-center-pulse {
+  background-color: var(--lumina-error-color);
+  /* 背景色变为错误色 */
+  box-shadow: 0 0 15px 3px var(--lumina-error-glow);
+  /* 辉光颜色变为错误状态辉光色 */
+}
+
+/* Loader Logo 文本样式 */
+.loader-logo-text {
+  font-family: var(--font-family-title);
+  /* 应用标题字体 */
+  font-size: calc(var(--base-font-size) * 2.2);
+  /* 字体大小 */
+  font-weight: 500;
+  /* 字体粗细 */
+  color: var(--current-text-primary);
+  /* 颜色使用主要文本色 */
+  letter-spacing: 1.5px;
+  /* 增加字符间距 */
+  margin-bottom: calc(var(--spacing-unit) * 3.5); /* 增加底部外边距 */
+  text-shadow: 0 1px 1px rgba(var(--current-bg-rgb), 0.5);
+  /* 添加微妙文本阴影 */
+}
+
+/* Loader Logo 文本中强调部分的样式 */
+.loader-logo-text span {
+  color: var(--current-accent-light);
+  /* 颜色使用光强调色 */
+  font-weight: 700;
+  /* 字体加粗 */
+}
+
+/* Loader Logo 版本标识样式 */
+.loader-logo-text .loader-version-pro {
+  font-size: 0.55em;
+  /* 字体大小 */
+  margin-left: 4px;
+  /* 左侧外边距 */
+  vertical-align: super;
+  /* 上标对齐 */
+  color: var(--current-accent-ink);
+  /* 颜色使用墨迹强调色 */
+  opacity: 0.9;
+  /* 降低透明度 */
+}
+
+/* 加载文本样式 */
+.loading-text {
+  font-family: var(--font-family-body);
+  /* 应用主体文本字体 */
+  font-size: var(--base-font-size);
+  /* 字体大小 */
+  color: var(--current-text-secondary);
+  /* 颜色使用辅助文本色 */
+  letter-spacing: 0.5px;
+  /* 字符间距 */
+  opacity: 0.85;
+  /* 降低透明度 */
+}
+
+/* Fatal Error 状态下的特定文本颜色覆盖 */
+.loader-container.loader-fatal-error .loader-logo-text {
+  color: var(--lumina-error-color);
+  /* 颜色变为错误色 */
+}
+
+.loader-container.loader-fatal-error .loading-text {
+  color: var(--current-text-primary);
+  /* 颜色变为主要文本色 */
+}
+
+.loader-container.loader-fatal-error .error-details-text {
+  color: var(--current-text-secondary);
+  /* 颜色使用辅助文本色 */
+}
+
+/* Fatal Error 状态下刷新按钮的顶部外边距 */
+.loader-container.loader-fatal-error .refresh-button {
+  margin-top: calc(var(--spacing-unit) * 2.5);
+}
+
+
+/* ==========================================================================
+   [ 18. Agent Process Log Sidebar Layout Fix ]
+   优化Agent执行轨迹侧栏条目布局，使图标和主文本同排。
+   ========================================================================== */
+
+/* Agent执行轨迹侧栏内容区域 */
+.process-log-content {
+  /* 确保内容区域可以滚动 */
+  overflow-y: auto;
+  padding: calc(var(--spacing-unit) * 1.5);
+  /* 内边距 */
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 1.5);
+  /* 条目之间的间距 */
+}
+
+/* 单个日志条目 */
+.process-log-content .log-item {
+  display: flex; /* 使用 flex 布局 */
+  align-items: flex-start; /* 条目顶部对齐 */
+  gap: calc(var(--spacing-unit) * 1); /* 图标与内容区域之间的间距 */
+  padding: calc(var(--spacing-unit) * 0.8) calc(var(--spacing-unit) * 1); /* 调整条目内边距 */
+  border-radius: var(--border-radius-slight); /* 轻微圆角 */
+  border: 1px solid transparent; /* 默认透明边框，用于状态高亮 */
+  transition: all var(--transition-duration-light-pulse) ease; /* 过渡效果 */
+  word-break: break-word; /* 防止长单词溢出 */
+  overflow-wrap: break-word; /* 防止长单词溢出 */
+}
+
+/* 日志条目图标 */
+.process-log-content .log-item > i.fas,
+.process-log-content .log-item > i.far {
+  flex-shrink: 0; /* 防止图标被压缩 */
+  font-size: calc(var(--base-font-size) * 1.1); /* 图标大小 */
+  margin-top: 2px; /* 微调图标位置使其与文本基线对齐 */
+  text-shadow: none; /* 移除通用图标阴影 */
+  color: var(--current-text-secondary); /* 默认图标颜色使用辅助文本色 */
+}
+
+/* 根据状态调整图标颜色 */
+.process-log-content .log-item > i.log-info { color: var(--current-accent-light); } /* 信息 */
+.process-log-content .log-item > i.log-processing { color: var(--current-accent-ink); } /* 处理中 */
+.process-log-content .log-item > i.log-success { color: var(--lumina-success-color); } /* 成功 */
+.process-log-content .log-item > i.log-warning { color: var(--current-accent-ink); } /* 警告 */
+.process-log-content .log-item > i.log-error { color: var(--lumina-error-color); } /* 错误 */
+.process-log-content .log-item > i.log-muted { color: var(--current-text-secondary); opacity: 0.7; } /* 静音/忽略 */
+.process-log-content .log-item > i.log-think { color: var(--current-accent-light); } /* 思考过程图标 */
+
+
+/* 日志条目主要内容区域 (包含主文本和详细信息) */
+.process-log-content .log-item-content-area {
+  display: flex; /* 使用 flex 布局 */
+  flex-direction: column; /* 子元素垂直堆叠 */
+  flex-grow: 1; /* 填充剩余水平空间 */
+  gap: calc(var(--spacing-unit) * 0.8); /* 主文本与详细信息之间的间距 */
+}
+
+/* 日志条目主消息文本 */
+.process-log-content .log-item-message {
+  font-size: calc(var(--base-font-size) * 0.9); /* 字体大小 */
+  color: var(--current-text-primary); /* 文本颜色使用主要文本色 */
+  line-height: 1.4; /* 行高 */
+  opacity: 0.9; /* 降低透明度 */
+}
+
+/* 日志条目详细信息区域 */
+.process-log-content .log-item-details,
+.process-log-content .log-think-content { /* 也包括思考内容 */
+  margin-top: calc(var(--spacing-unit) * 0.8); /* 顶部外边距 */
+  padding: calc(var(--spacing-unit) * 1); /* 内边距 */
+  background-color: rgba(var(--current-panel-bg-rgb), 0.4); /* 半透明背景 */
+  border: 1px dashed rgba(var(--current-panel-border-rgb), 0.6); /* 虚线边框 */
+  border-radius: var(--border-radius-slight); /* 轻微圆角 */
+  font-size: 0.85em; /* 字体大小 */
+  color: var(--current-text-secondary); /* 文本颜色使用辅助文本色 */
+  line-height: 1.5; /* 行高 */
+  word-break: break-all; /* 强制长单词或URL换行 */
+  overflow-wrap: break-word; /* 强制长单词或URL换行 */
+}
+
+/* 详细信息中的键 */
+.log-item-details strong.log-detail-key,
+.log-think-content strong {
+    font-family: var(--font-family-title); /* 应用标题字体 */
+    font-weight: 500; /* 字体粗细 */
+    color: var(--current-accent-ink); /* 颜色使用墨迹强调色 */
+    margin-right: calc(var(--spacing-unit) * 0.5); /* 键与值之间间距 */
+}
+
+/* 详细信息中的值 */
+.log-item-details span.log-detail-value {
+    color: var(--current-text-primary); /* 颜色使用主要文本色 */
+    opacity: 0.9; /* 降低透明度 */
+}
+
+/* 详细信息中的对象头部 */
+.log-item-details .log-detail-object-header {
+    margin-top: calc(var(--spacing-unit) * 0.5); /* 顶部外边距 */
+    margin-bottom: calc(var(--spacing-unit) * 0.5); /* 底部外边距 */
+}
+
+/* 详细信息中的原始 JSON/代码块 */
+.log-item-details pre.log-detail-raw-json,
+.log-think-content pre code {
+    background-color: rgba(var(--current-bg-rgb), 0.3); /* 半透明背景 */
+    padding: calc(var(--spacing-unit) * 0.8); /* 内边距 */
+    border-radius: var(--border-radius-slight); /* 轻微圆角 */
+    margin-top: calc(var(--spacing-unit) * 0.8); /* 顶部外边距 */
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; /* 等宽字体 */
+    font-size: 0.9em; /* 字体大小 */
+    color: var(--current-text-secondary); /* 文本颜色使用辅助文本色 */
+    border: 1px solid rgba(var(--current-panel-border-rgb), 0.3); /* 细边框 */
+    white-space: pre-wrap; /* 允许换行 */
+    word-break: break-all; /* 强制长单词或 URL 换行 */
+    overflow-x: auto; /* 水平滚动条 */
+}
+
+/* 详细信息中的错误 JSON/代码块 */
+.log-item-details pre.log-detail-raw-json.error,
+.log-think-content pre code.error {
+    color: var(--lumina-error-color); /* 错误颜色 */
+    border-color: var(--lumina-error-color); /* 边框颜色 */
+}
+
+/* 删除旧的头部 flex 样式 */
+.process-log-content .log-item-header-flex {
+    /* Removed - no longer needed with the new flex structure */
+    display: none; /* Ensure it's hidden if it somehow still appears */
+}
+
+
+/* ==========================================================================
+   [ 19. Utility Styles ]
+   一些通用的辅助类和特殊元素的样式，如滚动条。
+   ========================================================================== */
+
+/* 动画级别控制：full 级别应用完整动画时长 */
+body[data-animation-level=full] .animate__animated {
+  --animate-duration: var(--transition-duration-ink-flow);
+}
+
+/* 动画级别控制：basic 级别应用较短动画时长 */
+body[data-animation-level=basic] .animate__animated {
+  --animate-duration: var(--transition-duration-ink-subtle);
+}
+
+/* 动画级别控制：none 级别移除所有动画和过渡 */
+body[data-animation-level=none] .animate__animated {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* 自定义滚动条样式 (Webkit browsers: Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  /* 滚动条宽度和高度 */
+}
+
+/* 滚动条轨道样式 (Webkit) */
+::-webkit-scrollbar-track {
+  background: rgba(var(--current-panel-border-rgb), 0.1);
+  /* 轨道背景使用半透明面板边框色 */
+  border-radius: 4px;
+  /* 轨道圆角 */
+}
+
+/* 滚动条滑块样式 (Webkit) */
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--current-text-secondary-rgb), 0.4);
+  /* 滑块背景使用半透明辅助文本色 */
+  border-radius: 4px;
+  /* 滑块圆角 */
+  transition: background-color var(--transition-duration-light-pulse) ease;
+  /* 添加背景色过渡 */
+}
+
+/* 滚动条滑块悬停样式 (Webkit) */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--current-text-secondary-rgb), 0.6);
+  /* 悬停时背景色加深 */
+}
+
+/* 自定义滚动条样式 (Firefox) */
+* {
+  scrollbar-width: thin;
+  /* 滚动条宽度为细 */
+  scrollbar-color: rgba(var(--current-text-secondary-rgb), 0.4) rgba(var(--current-panel-border-rgb), 0.1);
+  /* 滑块颜色 轨道颜色 */
+}
+
+
+/* ==========================================================================
+   [ 20. Animations Keyframes ]
+   所有CSS动画的关键帧定义。
+   ========================================================================== */
+
+/* 文本纹理背景图的微妙偏移动画 */
+@keyframes subtleTextureShift {
+  to {
+    background-position: 400px 400px;
+    /* 背景图位置偏移 */
+  }
+}
+
+/* Lumina粒子漂浮动画 */
+@keyframes floatLuminaParticle {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0.1;
+    /* 初始状态 */
+  }
+
+  25% {
+    opacity: 0.6;
+    /* 中间状态透明度增加 */
+  }
+
+  50% {
+    transform: translate(35px, -45px) scale(1.2);
+    opacity: 0.8;
+    /* 中间状态位移、放大、透明度更高 */
+  }
+
+  75% {
+    opacity: 0.5;
+    /* 后期透明度降低 */
+  }
+
+  100% {
+    transform: translate(-25px, 30px) scale(0.6);
+    opacity: 0.15;
+    /* 结束状态位移、缩小、透明度再次降低 */
+  }
+}
+
+/* Loader核心旋转动画 */
+@keyframes luminaLoaderSpin {
+  to {
+    transform: rotate(360deg);
+    /* 旋转一周 */
+  }
+}
+
+/* Loader中心点脉动动画 */
+@keyframes luminaLoaderPulse {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.7;
+    /* 初始和结束状态缩小、降低透明度 */
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+    /* 中间状态放大、完全不透明 */
+  }
+}
+
+/* Fatal Error 状态下边框脉动动画 */
+@keyframes luminaErrorPulseBorder {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    /* 初始和结束状态降低透明度 */
+  }
+
+  50% {
+    opacity: 1;
+    /* 中间状态完全不透明 */
+  }
+}
+
+/* 打字指示器点跳动动画 */
+@keyframes luminaTypingDotBounce {
+
+  0%,
+  70%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.6;
+    /* 初始、中部、结束状态恢复原位、原大小、降低透明度 */
+  }
+
+  35% {
+    transform: translateY(-5px) scale(1.1);
+    opacity: 1;
+    /* 中间状态向上跳跃、放大、完全不透明 */
+  }
+}
+
+/* 发送按钮处理中动画 */
+@keyframes luminaSendButtonProcessing {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(var(--current-accent-ink-rgb), 0.3);
+    transform: scale(1);
+    /* 初始和结束状态，常规阴影和大小 */
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(var(--current-accent-ink-rgb), 0.5);
+    transform: scale(1.08);
+    /* 中间状态，更强的阴影和轻微放大 */
+  }
+}
+
+
+/* ==========================================================================
+   [ 21. Three.js / Black Hole Visuals (CSS Layers) ]
+   控制和管理Three.js渲染的3D黑洞特效容器的CSS层视觉样式。
+   ( थ्री.जेएस ब्लैक होल विज़ुअल्स (सीएसएस लेयर्स) )
+   ========================================================================== */
+
+/* Main container for the black hole effect - base styles */
+#idtTechComponentWrapper.black-hole-container {
+  position: fixed;
+  top: var(--idt-offset-top-percentage, 2.5%);
+  left: var(--idt-offset-left-percentage, 1.8%);
+  width: var(--idt-component-width, 280px);
+  height: var(--idt-component-height, 280px);
+  z-index: var(--z-index-component-wrapper);
+  transition: opacity var(--transition-duration-ink-flow) var(--transition-timing-function-lumina),
+    transform var(--transition-duration-ink-flow) var(--transition-timing-function-lumina);
+  opacity: 0; /* Initial state, controlled by .is-visible */
+  transform: scale(0.6) rotate(-15deg); /* Initial state */
+  cursor: grab;
+  /* Allow glow/star to extend beyond the main circle slightly */
+  overflow: visible;
+  border-radius: 50%; /* Main circular shape */
+  background-color: #05050a; /* Very dark background */
+  box-shadow: 0 0 60px 10px rgba(30, 30, 50, 0.2); /* Faint outer space shadow */
+}
+
+/* Common styles for all inner effect layers */
+#idtTechComponentWrapper.black-hole-container .bh-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the layers */
+  border-radius: 50%; /* Make them circular */
+  box-sizing: border-box;
+  pointer-events: none; /* Layers should not interfere with mouse events */
+}
+
+/* Outer glow / Gravitational lensing hint layer */
+.bh-outer-glow {
+  width: 110%; /* Slightly larger than the main container */
+  height: 110%;
+  box-shadow: 0 0 40px 15px rgba(100, 100, 120, 0.15), /* Faint blueish glow */
+              0 0 80px 30px rgba(50, 50, 70, 0.1);   /* More diffuse outer glow */
+  z-index: 1; /* Farthest back CSS layer */
+  animation: subtle-glow-pulse 6s infinite ease-in-out;
+}
+
+/* CSS Accretion Disk Layers */
+.bh-accretion-disk-outer,
+.bh-accretion-disk-middle,
+.bh-accretion-disk-inner {
+   /* Common disk layer styles */
+   box-shadow: 0 0 1px 1px rgba(255,255,255,0.1); /* Base subtle shimmer */
+   opacity: 0.7;
+   /* Ensure layers are above outer glow but below the simulated star */
+   z-index: 3;
+   animation-timing-function: linear; /* Constant speed for rotation */
+   animation-iteration-count: infinite; /* Repeat indefinitely */
+}
+
+/* Outer disk layer - cooler colors */
+.bh-accretion-disk-outer {
+  width: 95%;
+  height: 95%;
+  box-shadow:
+    0 0 20px 8px rgba(100, 100, 255, 0.3),  /* Blue glow */
+    0 0 35px 12px rgba(50, 50, 180, 0.2),   /* Deeper blue diffuse */
+    inset 0 0 8px 3px rgba(150, 150, 255, 0.2); /* Inner blue highlight */
+  animation-name: spin-clockwise, pulse-disk-outer;
+  animation-duration: 20s, 5s;
+}
+
+/* Middle disk layer - oranges/yellows */
+.bh-accretion-disk-middle {
+  width: 80%;
+  height: 80%;
+  box-shadow:
+    0 0 15px 6px rgba(255, 165, 0, 0.6),   /* Orange glow */
+    0 0 30px 10px rgba(255, 140, 0, 0.4),   /* Darker orange diffuse */
+    inset 0 0 10px 4px rgba(255, 190, 50, 0.4); /* Inner yellow-orange highlight */
+   /* Add a subtle tilt for perspective */
+   transform: translate(-50%, -50%) rotateX(10deg);
+  animation-name: spin-counter-clockwise, pulse-disk-middle;
+  animation-duration: 15s, 4s;
+}
+
+/* Inner disk layer - hottest colors, yellows/whites */
+.bh-accretion-disk-inner {
+  width: 65%;
+  height: 65%;
+  box-shadow:
+    0 0 10px 5px rgba(255, 255, 200, 0.8),  /* Bright Yellow */
+    0 0 20px 8px rgba(255, 255, 150, 0.6),   /* Yellow diffuse */
+    inset 0 0 12px 5px rgba(255, 255, 255, 0.7); /* Inner white highlight */
+   /* Add a subtle tilt for perspective */
+   transform: translate(-50%, -50%) rotateX(-15deg);
+  animation-name: spin-clockwise, pulse-disk-inner;
+  animation-duration: 10s, 3s;
+}
+
+/* Core shadow layer - reinforces the black hole's darkness */
+.bh-core-shadow {
+  width: 40%; /* Roughly the size of the event horizon */
+  height: 40%;
+  background-color: #000; /* Pure black */
+  /* Add a subtle shadow to give it depth */
+  box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.8);
+  z-index: 4; /* Above accretion disks */
+}
+
+
+/* Simulated Orbiting Star */
+.bh-orbiting-star {
+  width: 6px; /* Size of the star */
+  height: 6px;
+  background-color: #fff; /* White star color */
+  border-radius: 50%;
+  /* White glow effect */
+  box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.7);
+  z-index: 5; /* Above core shadow */
+  animation: orbit-around-bh 18s linear infinite, pulse-star 2s infinite ease-in-out;
+}
+
+
+/* Ensure the dynamically added canvas is on top of these CSS layers */
+/* The Three.js canvas contains the actual 3D models */
+#idtTechComponentWrapper.black-hole-container > canvas {
+  position: absolute; /* Position it on top of the CSS layers */
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 10; /* Highest z-index to appear on top */
+  /* Three.js renderer should be configured with alpha: true */
+  background-color: transparent !important; /* Ensure canvas background is transparent */
+  border-radius: inherit; /* Inherit border radius from container */
+}
+
+#idtTechComponentWrapper.black-hole-container.is-visible {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  /* 如果需要，这里还可以添加其他针对可见状态的样式或过渡效果 */
+}
+
+/* Keyframe animations */
+/* Subtle outer glow pulse */
+@keyframes subtle-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+}
+
+/* Spin animations (used by multiple layers) */
+@keyframes spin-clockwise {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes spin-counter-clockwise {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+/* Pulsing animations for disk layers */
+@keyframes pulse-disk-outer {
+  0%, 100% { box-shadow: 0 0 20px 8px rgba(100, 100, 255, 0.3), 0 0 35px 12px rgba(50, 50, 180, 0.2), inset 0 0 8px 3px rgba(150, 150, 255, 0.2); }
+  50% { box-shadow: 0 0 30px 12px rgba(120, 120, 255, 0.4), 0 0 50px 18px rgba(70, 70, 200, 0.3), inset 0 0 12px 5px rgba(180, 180, 255, 0.3); }
+}
+@keyframes pulse-disk-middle {
+  0%, 100% { box-shadow: 0 0 15px 6px rgba(255, 165, 0, 0.6), 0 0 30px 10px rgba(255, 140, 0, 0.4), inset 0 0 10px 4px rgba(255, 190, 50, 0.4); }
+  50% { box-shadow: 0 0 22px 9px rgba(255, 180, 30, 0.7), 0 0 40px 14px rgba(255, 150, 10, 0.5), inset 0 0 14px 6px rgba(255, 200, 60, 0.5); }
+}
+@keyframes pulse-disk-inner {
+  0%, 100% { box-shadow: 0 0 10px 5px rgba(255, 255, 200, 0.8), 0 0 20px 8px rgba(255, 255, 150, 0.6), inset 0 0 12px 5px rgba(255, 255, 255, 0.7); }
+  50% { box-shadow: 0 0 15px 7px rgba(255, 255, 220, 0.9), 0 0 25px 10px rgba(255, 255, 180, 0.7), inset 0 0 16px 7px rgba(255, 255, 255, 0.9); }
+}
+
+/* Star orbiting animation */
+@keyframes orbit-around-bh {
+  0% { transform: translate(-50%, -50%) rotate(0deg) translateX(140px) rotate(0deg); } /* Start at 140px right */
+  100% { transform: translate(-50%, -50%) rotate(360deg) translateX(140px) rotate(-360deg); } /* Orbit full circle and rotate */
+}
+
+/* Star pulse animation */
+@keyframes pulse-star {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; } /* Star gets slightly bigger and less opaque */
+}
+
+/* === [ End of REVISED Three.js / Black Hole Visuals (CSS Layers) ] === */
+
+
+/* ==========================================================================
+   [ END OF FILE style.css ]
+   ========================================================================== */

@@ -1,0 +1,107 @@
+# ==========================================================================
+# CircuitManus Agent - 应用配置文件 (config.yaml)
+# 版本: 1.1.0 (新增模型选择和中文深度思考配置)
+# ==========================================================================
+
+agent_settings:
+  general:
+    # 应用的全局名称或标识
+    app_name: "CircuitManus Pro Lumina"
+    # 默认的用户友好错误消息，当发生未知或无法具体描述的错误时显示给用户
+    default_user_facing_error_message: "抱歉，光绘核心在处理您的指令时遇到了未知的内部波动，请稍后再试或联系管理员。"
+
+  logging:
+    # 控制台日志级别 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    # DEBUG 会输出最详细的日志，用于开发和问题排查
+    log_level_console: "INFO"
+    # 文件日志级别
+    log_level_file: "DEBUG"
+    # 日志文件存储目录 (如果为 null 或留空, 将使用 agent 内部定义的默认目录 "WebUIAgentLogs")
+    log_dir: null # 例如: "CustomLogsDir" 或保持 null 使用默认
+
+  feature_flags:
+    # 是否启用LLM消息的详细日志记录 (包括完整的prompt和响应内容，可能包含敏感信息，请谨慎开启)
+    enable_detailed_llm_message_logging: false
+    # 【新增】是否启用“深度中文思考”功能的总开关（此为应用级开关，最终是否启用还需看用户在前端的选择）
+    # 如果这里设为 false，则无论前端用户如何选择，该功能都不可用。
+    # 如果这里设为 true，则用户可以在前端选择是否开启。
+    enable_chinese_deep_thinking_globally: true # 全局开关，允许用户在前端进一步选择
+
+  memory:
+    # 短期记忆（对话历史）中允许存储的最大消息条数
+    max_short_term_items: 30
+    # 长期记忆（经验总结）中允许存储的最大知识片段条数
+    max_long_term_items: 75
+    # 在构建发送给LLM的提示时，从长期记忆中提取最近N条记录
+    recent_long_term_count_for_prompt: 7
+
+  llm:
+    # 【新增】可用的LLM模型标识符列表。前端将基于此列表提供选项。
+    # "zhipu-ai" 代表智谱清言系列模型。
+    # "deepseek" 代表 DeepSeek 系列模型。
+    available_models:
+      - "zhipu-ai"
+      - "deepseek"
+    # 【新增】应用启动时或用户未选择时的默认LLM模型。必须是 available_models 中的一个。
+    default_model_identifier: "zhipu-ai"
+
+    # 智谱AI (ZhipuAI) 相关配置
+    zhipuai_settings:
+      # 实际调用的智谱AI模型名称 (例如 "glm-4", "glm-3-turbo", "glm-4v")
+      # 此处保持为 "glm-z1-flash" 是因为原始代码中使用的是这个，请根据您的实际需求和API权限修改
+      model_name: "glm-z1-flash" # 之前是顶层的 model_name
+
+    # 【新增】DeepSeek API 相关配置
+    deepseek_settings:
+      # 实际调用的 DeepSeek 模型名称 (例如 "deepseek-chat", "deepseek-coder")
+      model_name: "deepseek-chat"
+      # DeepSeek API 的 base_url，通常是固定的
+      base_url: "https://api.deepseek.com/v1" # 注意：官方文档可能会写 "https://api.deepseek.com"，但SDK通常需要 /v1
+
+    # 通用LLM调用参数（这些参数会根据所选模型传递给对应的SDK）
+    default_temperature: 0.01 # 控制生成文本的随机性，较低值更确定
+    default_max_tokens: 8190  # LLM生成的最大token数限制
+    api_timeout_seconds: 120  # LLM API调用的超时时间（秒）
+    
+    # Agent层面的LLM调用重试次数（不包括工具执行的重试）
+    # 用于规划阶段的LLM调用重试次数
+    planning_llm_retries: 3
+    # 用于响应生成阶段的LLM调用重试次数
+    response_generation_llm_retries: 1
+
+  prompts: # 提示工程相关配置
+    # 【新增】“深度中文思考”功能的默认用户偏好设置。
+    # 如果 enable_chinese_deep_thinking_globally 为 true，此设置将作为用户在前端未指定时的默认行为。
+    # 用户可以在前端UI中覆盖此默认设置。
+    enable_deep_thinking_chinese_default: false
+
+  tools:
+    # 单个工具执行失败时的最大重试次数 (ToolExecutor 使用)
+    max_tool_retries: 1
+    # 工具重试之间的延迟时间 (秒)
+    tool_retry_delay_seconds: 5.0 # 原为1.0，增加到5.0以更好地处理潜在的瞬时API问题
+
+    # 特定工具的配置 (示例)
+    specific_tools:
+      duckduckgo_search:
+        default_num_results: 3
+        timeout_seconds: 20
+        # region: "wt-wt" # 例如：搜索区域 (可选)
+        # safe_search: "moderate" # 例如：安全搜索级别 (可选)
+      serpapi_google_search: # 如果使用 SerpApi
+        default_num_results: 5
+        timeout_seconds: 30
+        # result_language_code: "lang_zh-CN" # 例如： SerpApi 的语言参数 (hl)
+        # result_country_code: "cn" # 例如： SerpApi 的国家参数 (gl)
+
+  orchestration:
+    # 当LLM规划或工具执行失败时，Agent尝试进行重规划的最大次数
+    max_replanning_attempts: 2
+
+  security:
+    # 用户输入请求的最大长度限制（字符数），防止过长输入消耗过多资源或导致问题
+    max_input_length_user_request: 10000
+
+# ==========================================================================
+# End of CircuitManus Agent - 应用配置文件 (config.yaml)
+# ==========================================================================
